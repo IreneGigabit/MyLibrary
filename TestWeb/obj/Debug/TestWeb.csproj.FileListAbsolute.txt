@@ -1,0 +1,12 @@
+D:\Download\Head First\MyLibrary\TestWeb\obj\Debug\TestWeb.csprojResolveAssemblyReference.cache
+D:\Download\Head First\MyLibrary\TestWeb\bin\TestWeb.dll.config
+D:\Download\Head First\MyLibrary\TestWeb\bin\TestWeb.dll
+D:\Download\Head First\MyLibrary\TestWeb\bin\TestWeb.pdb
+D:\Download\Head First\MyLibrary\TestWeb\obj\Debug\TestWeb.dll
+D:\Download\Head First\MyLibrary\TestWeb\obj\Debug\TestWeb.pdb
+D:\Download\Head First\MyLibrary\TestWeb\bin\MyLibrary.dll
+D:\Download\Head First\MyLibrary\TestWeb\bin\itextsharp.dll
+D:\Download\Head First\MyLibrary\TestWeb\bin\MyLibrary.pdb
+D:\Download\Head First\MyLibrary\TestWeb\bin\itextsharp.xml
+D:\Download\Head First\MyLibrary\TestWeb\bin\NPOI.dll
+D:\Download\Head First\MyLibrary\TestWeb\bin\NPOI.xml

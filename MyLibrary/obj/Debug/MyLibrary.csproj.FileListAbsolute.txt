@@ -1,0 +1,19 @@
+D:\Download\Head First\MyLibrary\MyLibrary\bin\Debug\MyLibrary.dll
+D:\Download\Head First\MyLibrary\MyLibrary\bin\Debug\MyLibrary.pdb
+D:\Download\Head First\MyLibrary\MyLibrary\bin\Debug\itextsharp.dll
+D:\Download\Head First\MyLibrary\MyLibrary\bin\Debug\itextsharp.xml
+D:\Download\Head First\MyLibrary\MyLibrary\obj\Debug\MyLibrary.dll
+D:\Download\Head First\MyLibrary\MyLibrary\obj\Debug\MyLibrary.pdb
+D:\Download\Head First\MyLibrary\MyLibrary\bin\Debug\NPOI.dll
+D:\Download\Head First\MyLibrary\MyLibrary\bin\Debug\NPOI.xml
+D:\Download\Head First\MyLibrary\MyLibrary\obj\Debug\MyLibrary.csprojResolveAssemblyReference.cache
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\MyLibrary\bin\Debug\MyLibrary.dll
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\MyLibrary\bin\Debug\MyLibrary.pdb
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\MyLibrary\bin\Debug\DocumentFormat.OpenXml.dll
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\MyLibrary\bin\Debug\itextsharp.dll
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\MyLibrary\bin\Debug\NPOI.dll
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\MyLibrary\bin\Debug\itextsharp.xml
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\MyLibrary\bin\Debug\NPOI.xml
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\MyLibrary\obj\Debug\MyLibrary.csprojResolveAssemblyReference.cache
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\MyLibrary\obj\Debug\MyLibrary.dll
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\MyLibrary\obj\Debug\MyLibrary.pdb

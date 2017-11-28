@@ -1,0 +1,25 @@
+D:\Download\Head First\MyLibrary\TestConsole\bin\Debug\TestConsole.exe.config
+D:\Download\Head First\MyLibrary\TestConsole\obj\Debug\TestConsole.csprojResolveAssemblyReference.cache
+D:\Download\Head First\MyLibrary\TestConsole\bin\Debug\TestConsole.exe
+D:\Download\Head First\MyLibrary\TestConsole\bin\Debug\TestConsole.pdb
+D:\Download\Head First\MyLibrary\TestConsole\bin\Debug\itextsharp.dll
+D:\Download\Head First\MyLibrary\TestConsole\bin\Debug\MyLibrary.dll
+D:\Download\Head First\MyLibrary\TestConsole\bin\Debug\MyLibrary.pdb
+D:\Download\Head First\MyLibrary\TestConsole\bin\Debug\itextsharp.xml
+D:\Download\Head First\MyLibrary\TestConsole\obj\Debug\TestConsole.exe
+D:\Download\Head First\MyLibrary\TestConsole\obj\Debug\TestConsole.pdb
+D:\Download\Head First\MyLibrary\TestConsole\bin\Debug\NPOI.dll
+D:\Download\Head First\MyLibrary\TestConsole\bin\Debug\NPOI.xml
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\TestConsole\bin\Debug\TestConsole.exe.config
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\TestConsole\obj\Debug\TestConsole.exe
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\TestConsole\obj\Debug\TestConsole.pdb
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\TestConsole\bin\Debug\TestConsole.exe
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\TestConsole\bin\Debug\TestConsole.pdb
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\TestConsole\bin\Debug\itextsharp.dll
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\TestConsole\bin\Debug\MyLibrary.dll
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\TestConsole\bin\Debug\DocumentFormat.OpenXml.dll
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\TestConsole\bin\Debug\NPOI.dll
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\TestConsole\bin\Debug\MyLibrary.pdb
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\TestConsole\bin\Debug\itextsharp.xml
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\TestConsole\bin\Debug\NPOI.xml
+C:\Users\iToy\Documents\Visual Studio 2013\Projects\MyLibrary\TestConsole\obj\Debug\TestConsole.csprojResolveAssemblyReference.cache
