@@ -33,7 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>TestConsole.PdfPTableHelperTester</StartupObject>
+    <StartupObject>TestConsole.SplitTester</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="itextsharp">
@@ -53,6 +53,7 @@
     <Compile Include="PdfPCellExtTester.cs" />
     <Compile Include="PdfPTableHelperTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SplitTester.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
