@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="DataExt.cs" />
     <Compile Include="DataMapping.cs" />
+    <Compile Include="DBHelper.cs" />
     <Compile Include="DocxHelper.cs" />
     <Compile Include="EncodeExt.cs" />
     <Compile Include="FormHelper.cs" />
