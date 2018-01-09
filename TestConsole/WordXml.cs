@@ -1,16 +1,23 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 
-namespace TestConsole
-{
-	class WordXml
-	{
+namespace TestConsole {
+	class WordXml {
 		private static string CurrDir = System.Environment.CurrentDirectory;
+		static string templateFile = CurrDir + @"\商標註冊申請書.docx";
 		static string outputFile = CurrDir + @"\new.xml";
 
 		static void Main(string[] args) {
+			//createXML();
+			writeDOCX();
+		}
+
+		#region 建立word(xml)
+		public static void createXML() {
 			// 建立 WordprocessingDocument 類別，透過 WordprocessingDocument 類別中的 Create 方法建立 Word 文件
 			using (WordprocessingDocument wordDocument = WordprocessingDocument.Create(outputFile, WordprocessingDocumentType.Document)) {
 				// 建立 MainDocumentPart 類別物件 mainPart，加入主文件部分
@@ -27,8 +34,33 @@ namespace TestConsole
 				run.AppendChild(new Text("在 body 本文內容產生 text 文字"));
 			}
 
-			Process.Start(outputFile);
+			//Process.Start(outputFile);
 		}
+		#endregion
+
+		#region 寫入word(docx)
+		public static void writeDOCX() {
+			WordprocessingDocument tempDoc = WordprocessingDocument.Open(templateFile, false);
+			Paragraph p = tempDoc.MainDocumentPart.Document.Body.Elements<Paragraph>().First();
+			OpenXmlElement cc=p.CloneNode(true);
+
+			using (WordprocessingDocument document = WordprocessingDocument.Open(outputFile, true)) {
+				// Assign a reference to the existing document body.
+				Body body = document.MainDocumentPart.Document.Body;
+    
+				// Add new text.
+				Paragraph para = body.AppendChild(new Paragraph());
+				Run run = para.AppendChild(new Run());
+				run.AppendChild(new Text("測試" + DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")));
+
+				body.AppendChild(cc);
+
+				document.Close();
+			}
+			tempDoc.Dispose();
+		}
+		#endregion
 
 	}
+
 }
