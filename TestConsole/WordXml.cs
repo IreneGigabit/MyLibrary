@@ -4,6 +4,8 @@ using System.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using System.Collections;
+using System.IO;
 
 namespace TestConsole {
 	class WordXml {
@@ -69,50 +71,116 @@ namespace TestConsole {
 
 			WordprocessingDocument tempDoc = WordprocessingDocument.Open(templateFile, false);
 
-			using (WordprocessingDocument document = WordprocessingDocument.Open(outputFile, true)) {
+			using (WordprocessingDocument outDoc = WordprocessingDocument.Open(outputFile, true)) {
 
-				Paragraph foot1 =new Paragraph();
-				Paragraph foot2 = new Paragraph();
-				SectionProperties[] foot = document.MainDocumentPart.RootElement.Descendants<SectionProperties>().ToArray();
-				foot1.AppendChild(foot[0]);
-				//foot2.Append(foot[1]);
+				SectionProperties foot1 = new SectionProperties();
+				SectionProperties foot2 = new SectionProperties();
+				SectionProperties[] foot = outDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().ToArray();
+				foot1 = (SectionProperties)foot[0].CloneNode(true);
+				foot2 = (SectionProperties)foot[1].CloneNode(true);
+				Paragraph pfoot1 = (Paragraph)foot[0].Parent.Parent.CloneNode(true);
 
-				IEnumerable<SectionProperties> sectPrs = document.MainDocumentPart.RootElement.Descendants<SectionProperties>();
+				IEnumerable<SectionProperties> sectPrs = outDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>();
 				foreach (SectionProperties sectPr in sectPrs) {
 					Console.WriteLine("sectPr ..!!");
 				}
 
-				document.MainDocumentPart.Document.Body.RemoveAllChildren<SdtElement>();
-				document.MainDocumentPart.Document.Body.RemoveAllChildren<Paragraph>();
-				//document.MainDocumentPart.Document.Body.RemoveAllChildren<SectionProperties>();
+				outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SdtElement>();
+				outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<Paragraph>();
+				outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SectionProperties>();
 
-				Body body = document.MainDocumentPart.Document.Body;
+				Body body = outDoc.MainDocumentPart.Document.Body;
 
-				string tagName = "prior";
+				body.Append(copyTag2(tempDoc, "title"));
+				body.AppendChild(new Paragraph());//空白行
+				body.Append(copyTag2(tempDoc, "Block1"));
+				PasteBookmarkText(outDoc.MainDocumentPart, "seq_no", "NT-332838");
+				body.AppendChild(new Paragraph());//空白行
+				//body.AppendChild(copyTag(tempDoc,outDoc, "title"));
+				//body.AppendChild(new Paragraph());//空白行
+				//body.AppendChild(copyTag(tempDoc, outDoc, "block1"));
+				//body.AppendChild(new Paragraph());//空白行
 
-				Tag elementTag = tempDoc.MainDocumentPart.RootElement.Descendants<Tag>()
-				.Where(
-					element => element.Val == tagName
-				).SingleOrDefault();
 
-				Console.WriteLine("start find " + tagName + "..");
-				if (elementTag != null) {
-					Console.WriteLine("find " + tagName + "!!");
+				//body.AppendChild(new Paragraph( new Run( new LastRenderedPageBreak(), new Text("Last text on the page"))));//?
+				//body.AppendChild(new Paragraph(new Run(new LastRenderedPageBreak(), foot1)));//?
+				//body.AppendChild(new Paragraph(new ParagraphProperties(foot1)));//頁尾+換頁
+				body.AppendChild(new Paragraph(new Run(new Break() { Type = BreakValues.Page })));//換頁
+				body.AppendChild(foot1);//頁尾
+				//body.AppendChild(foot2);
+			}
+		}
 
-					SdtElement block = (SdtElement)elementTag.Parent.Parent;
-					IEnumerable<Paragraph> tagRuns = block.Descendants<Paragraph>();
-					foreach (Paragraph tagRun in tagRuns) {
-						Console.WriteLine("find Paragraph(" + tagName + ")!!");
-						body.AppendChild(tagRun.CloneNode(true));
-					}
+		private static Paragraph[] copyTag2(WordprocessingDocument doc, string tagName) {
+			List<Paragraph> arrElement = new List<Paragraph>();
+			Tag elementTag = doc.MainDocumentPart.RootElement.Descendants<Tag>()
+			.Where(
+				element => element.Val.Value.ToLower()==tagName.ToLower()
+			).SingleOrDefault();
 
-					foreach (Paragraph tagRun in tagRuns) {
-						Console.WriteLine("find Paragraph(" + tagName + ")!!");
-						body.AppendChild(tagRun.CloneNode(true));
-					}
+			Console.WriteLine("start find " + tagName + "..");
+			if (elementTag != null) {
+				Console.WriteLine("find " + tagName + "!!");
 
+				SdtElement block = (SdtElement)elementTag.Parent.Parent;
+				IEnumerable<Paragraph> tagRuns = block.Descendants<Paragraph>();
+				foreach (Paragraph tagRun in tagRuns) {
+					arrElement.Add((Paragraph)tagRun.CloneNode(true));
+					//return tagRun.CloneNode(true);
 				}
 			}
+			return arrElement.ToArray();
+		}
+
+		private static void PasteBookmarkText(MainDocumentPart documentPart, string bookmarkName, string text) {
+			IEnumerable<BookmarkEnd> bookMarkEnds = documentPart.RootElement.Descendants<BookmarkEnd>();
+			foreach (BookmarkStart bookmarkStart in documentPart.RootElement.Descendants<BookmarkStart>()) {
+				if (bookmarkStart.Name.Value.ToLower() == bookmarkName.ToLower()) {
+					Console.WriteLine("find bookmark(" + bookmarkName + ")!!");
+					string id = bookmarkStart.Id.Value;
+					BookmarkEnd bookmarkEnd = bookMarkEnds.Where(i => i.Id.Value == id).First();
+
+					//var bookmarkText = bookmarkEnd.NextSibling();
+					Run bookmarkRun = bookmarkStart.NextSibling<Run>();
+					if (bookmarkRun != null) {
+						string[] txtArr = text.Split('\n');
+						for (int i = 0; i < txtArr.Length; i++) {
+							if (i == 0) {
+								Console.WriteLine("insert single!!");
+								bookmarkRun.GetFirstChild<Text>().Text = txtArr[i];
+							} else {
+								Console.WriteLine("insert multi!!");
+								bookmarkRun.Append(new Break());
+								bookmarkRun.Append(new Text(txtArr[i]));
+							}
+						}
+						//bookmarkRun.GetFirstChild<Text>().Text = text;
+						//bookmarkRun.Append(new Break());
+						//bookmarkRun.Append(new Text("換行"));
+					}
+				}
+			}
+		}
+
+		private static OpenXmlElement copyTag(WordprocessingDocument doc, WordprocessingDocument outdoc, string tagName) {
+			Body body = outdoc.MainDocumentPart.Document.Body;
+			Tag elementTag = doc.MainDocumentPart.RootElement.Descendants<Tag>()
+			.Where(
+				element => element.Val == tagName
+			).SingleOrDefault();
+
+			Console.WriteLine("start find " + tagName + "..");
+			if (elementTag != null) {
+				Console.WriteLine("find " + tagName + "!!");
+
+				SdtElement block = (SdtElement)elementTag.Parent.Parent;
+				IEnumerable<Paragraph> tagRuns = block.Descendants<Paragraph>();
+				foreach (Paragraph tagRun in tagRuns) {
+					body.AppendChild(tagRun.CloneNode(true));
+					//return tagRun.CloneNode(true);
+				}
+			}
+			return new Text();
 		}
 
 		private static void readTag() {
