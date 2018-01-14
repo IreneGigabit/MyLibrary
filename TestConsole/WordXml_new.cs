@@ -12,7 +12,7 @@ using System.IO;
 using MyLibrary;
 
 namespace TestConsole {
-	class WordXml {
+	class WordXml_new {
 		private static string CurrDir = System.Environment.CurrentDirectory;
 		static string templateFile = CurrDir + @"\[團體標章註冊申請書].docx";
 		static string outputFile = CurrDir + @"\[團體標章註冊申請書]-NT66824.docx";
@@ -24,8 +24,8 @@ namespace TestConsole {
 			//createXML();
 			//writeDOCX();
 			//readTag();
-			cloneDoc();
-			//imageDoc();
+			//cloneDoc();
+			imageDoc();
 			Process.Start(outputFile);
 			Console.ReadLine();
 		}

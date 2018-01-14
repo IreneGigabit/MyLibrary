@@ -59,6 +59,7 @@
     <Compile Include="EncodeExt.cs" />
     <Compile Include="FormHelper.cs" />
     <Compile Include="ImageData.cs" />
+    <Compile Include="ImageData_old.cs" />
     <Compile Include="LINQPadExtensions.cs" />
     <Compile Include="PdfPCellExt.cs" />
     <Compile Include="PdfPTableHelper.cs" />

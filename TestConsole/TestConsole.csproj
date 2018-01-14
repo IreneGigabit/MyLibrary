@@ -33,7 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>TestConsole.WordXml</StartupObject>
+    <StartupObject>TestConsole.WordXml_new</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DocumentFormat.OpenXml, Version=2.8.1.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
@@ -60,6 +60,7 @@
     <Compile Include="PdfPTableHelperTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SplitTester.cs" />
+    <Compile Include="WordXml_new.cs" />
     <Compile Include="WordXml.cs" />
   </ItemGroup>
   <ItemGroup>
