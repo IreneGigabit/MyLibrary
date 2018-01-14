@@ -4,21 +4,30 @@ using System.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
-using System.Collections;
+using A = DocumentFormat.OpenXml.Drawing;
+using DW = DocumentFormat.OpenXml.Drawing.Wordprocessing;
+using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
+using System.Diagnostics;
 using System.IO;
+using MyLibrary;
 
 namespace TestConsole {
 	class WordXml {
 		private static string CurrDir = System.Environment.CurrentDirectory;
-		static string templateFile = CurrDir + @"\商標註冊申請書.docx";
-		static string outputFile = CurrDir + @"\商標註冊申請書 - 複製.docx";
+		static string templateFile = CurrDir + @"\[團體標章註冊申請書].docx";
+		static string outputFile = CurrDir + @"\[團體標章註冊申請書]-NT66824.docx";
+		//static string templateFile = CurrDir + @"\img.docx";
+		//static string outputFile = CurrDir + @"\img-new.doc";
+		static string imgFile = CurrDir + @"\66824.jpg";
 
 		static void Main(string[] args) {
 			//createXML();
 			//writeDOCX();
 			//readTag();
 			cloneDoc();
-			Console.ReadLine();
+			//imageDoc();
+			Process.Start(outputFile);
+			//Console.ReadLine();
 		}
 
 		#region 建立word(xml)
@@ -66,6 +75,24 @@ namespace TestConsole {
 		}
 		#endregion
 
+		#region word插入圖片
+		private static void imageDoc() {
+			File.Copy(templateFile, outputFile,true);
+			using (WordprocessingDocument document = WordprocessingDocument.Open(outputFile, true)) {
+				Body body = document.MainDocumentPart.Document.Body;
+				body.AppendChild(new Paragraph(GenerateImageRun(document, new ImageData(CurrDir + @"\66824.jpg"))));
+				var cat2Img = new ImageData(CurrDir + @"\66824.jpg")
+				{
+					Width = 8,
+					Height = 8
+				};
+				var imgRun = GenerateImageRun(document, cat2Img);
+				body.AppendChild(new Paragraph(imgRun));
+			}
+		}
+		#endregion
+
+		#region 複製範本產生新檔
 		private static void cloneDoc() {
 			System.IO.File.Copy(templateFile, outputFile, true);
 
@@ -92,10 +119,58 @@ namespace TestConsole {
 				Body body = outDoc.MainDocumentPart.Document.Body;
 
 				body.Append(copyTag2(tempDoc, "title"));
-				body.AppendChild(new Paragraph());//空白行
-				body.Append(copyTag2(tempDoc, "Block1"));
-				PasteBookmarkText(outDoc.MainDocumentPart, "seq_no", "NT-332838");
-				body.AppendChild(new Paragraph());//空白行
+				//body.AppendChild(new Paragraph());//空白行
+				copyTag3(tempDoc,outDoc,  "Block1");
+				//body.Append(copyTag2(tempDoc, "Block1"));
+				PasteBookmarkText(outDoc.MainDocumentPart, "seq_no", "NT66824(20180111)");
+				PasteBookmarkText(outDoc.MainDocumentPart, "appl_name", "FE9測試");
+				PasteBookmarkText(outDoc.MainDocumentPart, "color", "彩色");
+				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageData(imgFile))));
+				body.Append(copyTag2(tempDoc, "b_apcust"));//申請人
+				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_country", "TW中華民國");
+				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_cname", "英業達股份有限公司");
+				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_ename", "INVENTEC CORPORATION");
+				body.Append(copyTag2(tempDoc, "b_agent"));//代理人
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt1_name", "高,玉駿");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt2_name", "楊,祺雄");
+				body.Append(copyTag2(tempDoc, "b_content"));//表彰內容
+				PasteBookmarkText(outDoc.MainDocumentPart, "good_name", "英業達股份有限公司");
+				body.Append(copyTag2(tempDoc, "b_fees"));//繳費資訊
+				PasteBookmarkText(outDoc.MainDocumentPart, "pay_fees", "4700");
+				PasteBookmarkText(outDoc.MainDocumentPart, "rectitle_name", "英業達股份有限公司");
+				body.Append(copyTag2(tempDoc, "b_attach"));//附送書件
+				body.Append(copyTag2(tempDoc, "b_statment"));//聲明內容
+				body.AppendChild(new Paragraph(new ParagraphProperties(foot1)));//頁尾+換頁
+
+				//基本資料表
+				body.Append(copyTag2(tempDoc, "base_title"));//抬頭
+				body.Append(copyTag2(tempDoc, "base_apcust"));//申請人
+				PasteBookmarkText(outDoc.MainDocumentPart, "apcountry", "TW中華民國");
+				PasteBookmarkText(outDoc.MainDocumentPart, "apclass", "法人公司機關學校");
+				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_no", "04322046");
+				PasteBookmarkText(outDoc.MainDocumentPart, "cname_title", "中文名稱");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_cname", "英業達股份有限公司");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ename_title", "英文名稱");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_ename", "INVENTEC CORPORATION");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_live_country", "TW中華民國");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_zip", "840");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_addr", "高雄市大樹區學城路1段9、13、15、17、19、21、23號");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_crep", "堃峯");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_erep", "Lee &Richard");
+				body.Append(copyTag2(tempDoc, "base_agent"));//代理人
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_id1", "B100379440");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_name1", "高,玉駿");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_zip1", "105");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_addr1", "高,玉駿");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agatt_tel1", "02-77028299#261");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agatt_fax1", "02-77028289");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_id2", "M120741174");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_name2", "楊,祺雄");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_zip2", "105");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_addr2", "高,玉駿");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agatt_tel2", "02-77028299#261");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agatt_fax2", "02-77028289");
+
 				//body.AppendChild(copyTag(tempDoc,outDoc, "title"));
 				//body.AppendChild(new Paragraph());//空白行
 				//body.AppendChild(copyTag(tempDoc, outDoc, "block1"));
@@ -105,9 +180,26 @@ namespace TestConsole {
 				//body.AppendChild(new Paragraph( new Run( new LastRenderedPageBreak(), new Text("Last text on the page"))));//?
 				//body.AppendChild(new Paragraph(new Run(new LastRenderedPageBreak(), foot1)));//?
 				//body.AppendChild(new Paragraph(new ParagraphProperties(foot1)));//頁尾+換頁
-				body.AppendChild(new Paragraph(new Run(new Break() { Type = BreakValues.Page })));//換頁
-				body.AppendChild(foot1);//頁尾
+				//body.AppendChild(new Paragraph(new Run(new Break() { Type = BreakValues.Page })));//換頁
+				body.AppendChild(foot2);//頁尾
 				//body.AppendChild(foot2);
+			}
+		}
+		#endregion
+
+		private static void copyTag3(WordprocessingDocument tmpDoc, WordprocessingDocument outDoc, string tagName) {
+			Body body = outDoc.MainDocumentPart.Document.Body;
+			Tag elementTag = tmpDoc.MainDocumentPart.RootElement.Descendants<Tag>()
+			.Where(
+				element => element.Val.Value.ToLower() == tagName.ToLower()
+			).SingleOrDefault();
+
+			if (elementTag != null) {
+				Console.WriteLine("start find " + tagName + "..");
+				var tagRuns = elementTag.Parent.Parent.Descendants<Paragraph>().ToArray();
+				foreach (var tagRun in tagRuns) {
+					body.AppendChild(tagRun.CloneNode(true));
+				}
 			}
 		}
 
@@ -158,8 +250,89 @@ namespace TestConsole {
 						//bookmarkRun.Append(new Break());
 						//bookmarkRun.Append(new Text("換行"));
 					}
+					bookmarkStart.Remove();
+					bookmarkEnd.Remove();
 				}
 			}
+		}
+
+		public static Run GenerateImageRun(WordprocessingDocument wordDoc, ImageData img) {
+			MainDocumentPart mainPart = wordDoc.MainDocumentPart;
+
+			ImagePart imagePart = mainPart.AddImagePart(ImagePartType.Jpeg);
+			var relationshipId = mainPart.GetIdOfPart(imagePart);
+			imagePart.FeedData(img.DataStream);
+
+			// Define the reference of the image.
+			var element =
+				 new Drawing(
+					 new DW.Inline(
+						 //Size of image, unit = EMU(English Metric Unit)
+						 //1 cm = 360000 EMUs
+						 new DW.Extent() { Cx = img.WidthInEMU, Cy = img.HeightInEMU },
+						 new DW.EffectExtent()
+						 {
+							 LeftEdge = 0L,
+							 TopEdge = 0L,
+							 RightEdge = 0L,
+							 BottomEdge = 0L
+						 },
+						 new DW.DocProperties()
+						 {
+							 Id = (UInt32Value)1U,
+							 Name = img.ImageName
+						 },
+						 new DW.NonVisualGraphicFrameDrawingProperties(
+							 new A.GraphicFrameLocks() { NoChangeAspect = true }),
+						 new A.Graphic(
+							 new A.GraphicData(
+								 new PIC.Picture(
+									 new PIC.NonVisualPictureProperties(
+										 new PIC.NonVisualDrawingProperties()
+										 {
+											 Id = (UInt32Value)0U,
+											 Name = img.FileName
+										 },
+										 new PIC.NonVisualPictureDrawingProperties()),
+									 new PIC.BlipFill(
+										 new A.Blip(
+											 new A.BlipExtensionList(
+												 new A.BlipExtension()
+												 {
+													 Uri =
+														"{28A0092B-C50C-407E-A947-70E740481C1C}"
+												 })
+										 )
+										 {
+											 Embed = relationshipId,
+											 CompressionState =
+											 A.BlipCompressionValues.Print
+										 },
+										 new A.Stretch(
+											 new A.FillRectangle())),
+									 new PIC.ShapeProperties(
+										 new A.Transform2D(
+											 new A.Offset() { X = 0L, Y = 0L },
+											 new A.Extents()
+											 {
+												 Cx = img.WidthInEMU,
+												 Cy = img.HeightInEMU
+											 }),
+										 new A.PresetGeometry(
+											 new A.AdjustValueList()
+										 )
+										 { Preset = A.ShapeTypeValues.Rectangle }))
+							 )
+							 { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" })
+					 )
+					 {
+						 DistanceFromTop = (UInt32Value)0U,
+						 DistanceFromBottom = (UInt32Value)0U,
+						 DistanceFromLeft = (UInt32Value)0U,
+						 DistanceFromRight = (UInt32Value)0U,
+						// EditId = "50D07946"
+					 });
+			return new Run(element);
 		}
 
 		private static OpenXmlElement copyTag(WordprocessingDocument doc, WordprocessingDocument outdoc, string tagName) {
@@ -183,75 +356,6 @@ namespace TestConsole {
 			return new Text();
 		}
 
-		private static void readTag() {
-			WordprocessingDocument tempDoc = WordprocessingDocument.Open(templateFile, false);
-
-			using (WordprocessingDocument document = WordprocessingDocument.Create(outputFile, WordprocessingDocumentType.Document)) {
-				// 建立 MainDocumentPart 類別物件 mainPart，加入主文件部分 
-				MainDocumentPart mainPart = document.AddMainDocumentPart();
-				// 實例化 Document(w) 部分
-				mainPart.Document = new Document();
-				//Part
-				mainPart.AddPart(tempDoc.MainDocumentPart.NumberingDefinitionsPart);
-
-
-				Body body = mainPart.Document.AppendChild(new Body());
-				string tagName = "prior";
-	
-				Tag elementTag = tempDoc.MainDocumentPart.RootElement.Descendants<Tag>()
-				.Where(
-					element => element.Val == tagName
-				).SingleOrDefault();
-
-				Console.WriteLine("start find " + tagName + "..");
-				if (elementTag != null) {
-					Console.WriteLine("find " + tagName + "!!");
-
-					SdtElement block = (SdtElement)elementTag.Parent.Parent;
-					IEnumerable<Paragraph> tagRuns = block.Descendants<Paragraph>();
-					foreach (Paragraph tagRun in tagRuns) {
-						Console.WriteLine("find Paragraph(" + tagName + ")!!");
-						body.AppendChild(tagRun.CloneNode(true));
-					}
-
-					foreach (Paragraph tagRun in tagRuns) {
-						Console.WriteLine("find Paragraph(" + tagName + ")!!");
-						body.AppendChild(tagRun.CloneNode(true));
-					}
-
-				}
-
-				document.Close();
-			}
-			tempDoc.Dispose();
-		}
-
-		private static void PasteTagText(MainDocumentPart documentPart, string tagName, string text) {
-			Tag elementTag = documentPart.RootElement.Descendants<Tag>()
-			.Where(
-				element => element.Val == tagName
-			).SingleOrDefault();
-
-			if (elementTag != null) {
-				SdtElement block = (SdtElement)elementTag.Parent.Parent;
-				//Run tagRun = block.Descendants<Run>().FirstOrDefault();//.SingleOrDefault();
-				IEnumerable<Run> tagRuns = block.Descendants<Run>();
-				foreach (Run tagRun in tagRuns) {
-					if (tagRun.GetFirstChild<Text>() != null) {
-						string[] txtArr = text.Split('\n');
-						for (int i = 0; i < txtArr.Length; i++) {
-							if (i == 0) {
-								tagRun.GetFirstChild<Text>().Text = txtArr[i];
-							} else {
-								tagRun.Append(new Break());
-								tagRun.Append(new Text(txtArr[i]));
-							}
-						}
-						break;
-					}
-				}
-			}
-		}
 	}
 
 }
