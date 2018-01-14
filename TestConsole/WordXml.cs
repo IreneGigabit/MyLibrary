@@ -27,7 +27,7 @@ namespace TestConsole {
 			cloneDoc();
 			//imageDoc();
 			Process.Start(outputFile);
-			//Console.ReadLine();
+			Console.ReadLine();
 		}
 
 		#region 建立word(xml)
@@ -106,7 +106,7 @@ namespace TestConsole {
 				foot1 = (SectionProperties)foot[0].CloneNode(true);
 				foot2 = (SectionProperties)foot[1].CloneNode(true);
 				Paragraph pfoot1 = (Paragraph)foot[0].Parent.Parent.CloneNode(true);
-
+				Console.WriteLine(pfoot1.ToString());
 				IEnumerable<SectionProperties> sectPrs = outDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>();
 				foreach (SectionProperties sectPr in sectPrs) {
 					Console.WriteLine("sectPr ..!!");
@@ -157,7 +157,7 @@ namespace TestConsole {
 				PasteBookmarkText(outDoc.MainDocumentPart, "ap_addr", "高雄市大樹區學城路1段9、13、15、17、19、21、23號");
 				PasteBookmarkText(outDoc.MainDocumentPart, "ap_crep", "堃峯");
 				PasteBookmarkText(outDoc.MainDocumentPart, "ap_erep", "Lee &Richard");
-				body.Append(copyTag2(tempDoc, "base_agent"));//代理人
+				body.Append(copyTag4(tempDoc, "base_agent"));//代理人
 				PasteBookmarkText(outDoc.MainDocumentPart, "agt_id1", "B100379440");
 				PasteBookmarkText(outDoc.MainDocumentPart, "agt_name1", "高,玉駿");
 				PasteBookmarkText(outDoc.MainDocumentPart, "agt_zip1", "105");
@@ -202,12 +202,30 @@ namespace TestConsole {
 				}
 			}
 		}
+		private static Paragraph[] copyTag4(WordprocessingDocument doc, string tagName) {
+			List<Paragraph> arrElement = new List<Paragraph>();
+			Tag elementTag = doc.MainDocumentPart.RootElement.Descendants<Tag>()
+			.Where(
+				element => element.Val.Value.ToLower() == tagName.ToLower()
+			).SingleOrDefault();
 
+			Console.WriteLine("start find " + tagName + "..");
+			if (elementTag != null) {
+				Console.WriteLine("find " + tagName + "!!");
+
+				SdtElement block = (SdtElement)elementTag.Parent.Parent;
+				IEnumerable<Paragraph> tagRuns = block.Descendants<Paragraph>();
+				foreach (Paragraph tagRun in tagRuns) {
+					arrElement.Add(new Paragraph(new Run(new Text(tagRun.InnerText))));
+				}
+			}
+			return arrElement.ToArray();
+		}
 		private static Paragraph[] copyTag2(WordprocessingDocument doc, string tagName) {
 			List<Paragraph> arrElement = new List<Paragraph>();
 			Tag elementTag = doc.MainDocumentPart.RootElement.Descendants<Tag>()
 			.Where(
-				element => element.Val.Value.ToLower()==tagName.ToLower()
+				element => element.Val.Value.ToLower() == tagName.ToLower()
 			).SingleOrDefault();
 
 			Console.WriteLine("start find " + tagName + "..");
