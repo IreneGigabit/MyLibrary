@@ -25,10 +25,180 @@ namespace TestConsole {
 			//writeDOCX();
 			//readTag();
 			//cloneDoc();
-			imageDoc();
+			//imageDoc();
+			//mergeWord();
+			//mergeWordEdit();
+			cloneStreamDoc();
+			//cloneStreamDocasFile();
 			Process.Start(outputFile);
 			Console.ReadLine();
 		}
+
+
+		#region 複製範本(範本memory,輸出file)圖檔OK!!
+		private static void cloneStreamDocasFile() {
+			templateFile = CurrDir + @"\01發明專利申請書_img.docx";
+
+			System.IO.File.Copy(templateFile, outputFile, true);
+
+			byte[] tempArray = File.ReadAllBytes(templateFile);
+			MemoryStream tempMem = new MemoryStream();
+			tempMem.Write(tempArray, 0, (int)tempArray.Length);
+			WordprocessingDocument tempDoc = WordprocessingDocument.Open(tempMem, false);
+
+			WordprocessingDocument outDoc = WordprocessingDocument.Open(outputFile, true);
+			try {
+				//using (WordprocessingDocument tempDoc = WordprocessingDocument.Open(tempMem, true)) {
+				//using (WordprocessingDocument outDoc = WordprocessingDocument.Open(outMem, true)) {
+				Body body = outDoc.MainDocumentPart.Document.Body;
+				SectionProperties[] foot = tempDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().ToArray();
+
+				body.RemoveAllChildren<SdtElement>();
+				body.RemoveAllChildren<Paragraph>();
+				body.RemoveAllChildren<SectionProperties>();
+
+				body.Append(copyTag2(tempDoc, "b_title"));
+				copyTag3(tempDoc, outDoc, "b_apply");
+				PasteBookmarkText(outDoc.MainDocumentPart, "reality", "是");
+				PasteBookmarkText(outDoc.MainDocumentPart, "seq", "NT66824(20180111)");
+				PasteBookmarkText(outDoc.MainDocumentPart, "cappl_name", "FE9測試");
+				PasteBookmarkText(outDoc.MainDocumentPart, "eappl_name", "colors test");
+				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageData(imgFile))));
+				copyTag5(tempDoc, outDoc, "b_table");
+				outDoc.MainDocumentPart.Document.Body.InsertAt(new Paragraph(new Run(new Text("Newly inserted paragraph."))), 0);
+				body.AppendChild(new Paragraph(new ParagraphProperties(foot[0].CloneNode(true))));//頁尾+換頁
+				//body.AppendChild(foot[0].CloneNode(true));//頁尾
+
+				//}
+				//}
+				outDoc.MainDocumentPart.Document.Save();
+			}
+			finally {
+				outDoc.Close();
+				tempDoc.Close();
+				tempMem.Close();
+			}
+		}
+		#endregion
+
+		#region 複製範本(範本memory,輸出memory)插入圖檔XX,範本圖檔OK
+		private static void cloneStreamDoc() {
+			templateFile = CurrDir + @"\01發明專利申請書_img.docx";
+
+			byte[] tempArray = File.ReadAllBytes(templateFile);
+			byte[] outArray = File.ReadAllBytes(templateFile);
+			MemoryStream tempMem = new MemoryStream();
+			tempMem.Write(tempArray, 0, (int)tempArray.Length);
+
+			MemoryStream outMem = new MemoryStream();
+			outMem.Write(outArray, 0, (int)outArray.Length);
+
+			WordprocessingDocument tempDoc = WordprocessingDocument.Open(tempMem, false);
+			WordprocessingDocument outDoc = WordprocessingDocument.Open(outMem, true);
+
+			try {
+				//using (WordprocessingDocument tempDoc = WordprocessingDocument.Open(tempMem, true)) {
+				//using (WordprocessingDocument outDoc = WordprocessingDocument.Open(outMem, true)) {
+				Body body = outDoc.MainDocumentPart.Document.Body;
+				SectionProperties[] foot = outDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().ToArray();
+
+				body.RemoveAllChildren<SdtElement>();
+				body.RemoveAllChildren<Paragraph>();
+				body.RemoveAllChildren<SectionProperties>();
+
+				body.Append(copyTag2(tempDoc, "b_title"));
+				copyTag3(tempDoc, outDoc, "b_apply");
+				PasteBookmarkText(outDoc.MainDocumentPart, "reality", "是");
+				PasteBookmarkText(outDoc.MainDocumentPart, "seq", "NT66824(20180111)");
+				PasteBookmarkText(outDoc.MainDocumentPart, "cappl_name", "FE9測試");
+				PasteBookmarkText(outDoc.MainDocumentPart, "eappl_name", "colors test");
+				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageData(imgFile))));
+				copyTag5(tempDoc, outDoc, "b_table");
+
+				outDoc.MainDocumentPart.Document.Body.InsertAt(new Paragraph(new Run(new Text("Newly inserted paragraph."))), 0);
+				//}
+				//}
+				outDoc.MainDocumentPart.Document.Save();
+				outDoc.Close();
+
+				using (FileStream fileStream = new FileStream(outputFile, FileMode.Create)) {
+					outMem.Position = 0;
+					outMem.WriteTo(fileStream);
+				}
+			}
+			finally {
+				//if (outDoc.Dispose()!=null) outDoc.Close();
+				outDoc.Dispose();
+				tempDoc.Close();
+				outMem.Close();
+				tempMem.Close();
+			}
+		}
+		#endregion
+
+		#region 合併word且修改
+		public static void mergeWordEdit() {
+			string templateFile1 = CurrDir + @"\01發明專利申請書.docx";
+			string templateFile2 = CurrDir + @"\00基本資料表.docx";
+
+			System.IO.File.Copy(templateFile1, outputFile, true);
+			WordprocessingDocument tempDoc = WordprocessingDocument.Open(templateFile1, false);
+			using (WordprocessingDocument outDoc = WordprocessingDocument.Open(outputFile, true)) {
+				SectionProperties foot = (SectionProperties)outDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().FirstOrDefault().CloneNode(true);
+				outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SdtElement>();
+				outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<Paragraph>();
+				outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SectionProperties>();
+
+				Body body = outDoc.MainDocumentPart.Document.Body;
+
+				body.Append(copyTag2(tempDoc, "b_title"));
+				//body.AppendChild(new Paragraph());//空白行
+				copyTag3(tempDoc, outDoc, "Block1");
+				//body.Append(copyTag2(tempDoc, "Block1"));
+				PasteBookmarkText(outDoc.MainDocumentPart, "seq_no", "NT66824(20180111)");
+				PasteBookmarkText(outDoc.MainDocumentPart, "appl_name", "FE9測試");
+				PasteBookmarkText(outDoc.MainDocumentPart, "color", "彩色");
+				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageData(imgFile))));
+
+				//body.AppendChild(new Paragraph( new Run( new LastRenderedPageBreak(), new Text("Last text on the page"))));//?
+				//body.AppendChild(new Paragraph(new Run(new LastRenderedPageBreak(), foot1)));//?
+				body.AppendChild(new Paragraph(new ParagraphProperties(foot)));//頁尾+換頁
+				//body.AppendChild(new Paragraph(new Run(new Break() { Type = BreakValues.Page })));//換頁
+				//body.AppendChild(foot);//頁尾
+
+				string altChunkId = "AltChunkId" + DateTime.Now.Ticks.ToString().Substring(0, 2);
+				AlternativeFormatImportPart chunk = outDoc.MainDocumentPart.AddAlternativeFormatImportPart(DocumentFormat.OpenXml.Packaging.AlternativeFormatImportPartType.WordprocessingML, altChunkId);
+				using (FileStream fileStream = File.Open(templateFile2, FileMode.Open)) {
+					chunk.FeedData(fileStream);
+				}
+				AltChunk altChunk = new DocumentFormat.OpenXml.Wordprocessing.AltChunk();
+				altChunk.Id = altChunkId;
+				//mainPart.Document.Body.InsertAfter(altChunk, mainPart.Document.Body.Elements<Paragraph>().Last());
+				body.Append(altChunk);
+			}
+		}
+		#endregion
+
+		#region 合併word
+		public static void mergeWord() {
+			string templateFile1 = CurrDir + @"\01發明專利申請書.docx";
+			string templateFile2 = CurrDir + @"\00基本資料表.docx";
+			using (WordprocessingDocument myDoc = DocumentFormat.OpenXml.Packaging.WordprocessingDocument.Open(templateFile1, true)) {
+				string altChunkId = "AltChunkId" + DateTime.Now.Ticks.ToString().Substring(0, 2);
+				MainDocumentPart mainPart = myDoc.MainDocumentPart;
+
+				AlternativeFormatImportPart chunk = mainPart.AddAlternativeFormatImportPart(DocumentFormat.OpenXml.Packaging.AlternativeFormatImportPartType.WordprocessingML, altChunkId);
+				using (FileStream fileStream = File.Open(templateFile2, FileMode.Open)) {
+					chunk.FeedData(fileStream);
+				}
+				AltChunk altChunk = new DocumentFormat.OpenXml.Wordprocessing.AltChunk();
+				altChunk.Id = altChunkId;
+				//mainPart.Document.Body.InsertAfter(altChunk, mainPart.Document.Body.Elements<Paragraph>().Last());
+				mainPart.Document.Body.Append(altChunk);
+				mainPart.Document.Save();
+			}
+		}
+		#endregion
 
 		#region 建立word(xml)
 		public static void createXML() {
@@ -92,9 +262,10 @@ namespace TestConsole {
 		}
 		#endregion
 
-		#region 複製範本產生新檔
+		#region 複製範本(範本file,輸出file)插入圖檔OK,範本圖檔XX
 		private static void cloneDoc() {
 			System.IO.File.Copy(templateFile, outputFile, true);
+			templateFile = CurrDir + @"\01發明專利申請書_img.docx";
 
 			WordprocessingDocument tempDoc = WordprocessingDocument.Open(templateFile, false);
 
@@ -170,6 +341,7 @@ namespace TestConsole {
 				PasteBookmarkText(outDoc.MainDocumentPart, "agt_addr2", "高,玉駿");
 				PasteBookmarkText(outDoc.MainDocumentPart, "agatt_tel2", "02-77028299#261");
 				PasteBookmarkText(outDoc.MainDocumentPart, "agatt_fax2", "02-77028289");
+				copyTag5(tempDoc,outDoc, "b_table");//表格
 
 				//body.AppendChild(copyTag(tempDoc,outDoc, "title"));
 				//body.AppendChild(new Paragraph());//空白行
@@ -187,6 +359,23 @@ namespace TestConsole {
 		}
 		#endregion
 
+		private static void copyTag5(WordprocessingDocument tmpDoc, WordprocessingDocument outDoc, string tagName) {
+			Body body = outDoc.MainDocumentPart.Document.Body;
+			Tag elementTag = tmpDoc.MainDocumentPart.RootElement.Descendants<Tag>()
+			.Where(
+				element => element.Val.Value.ToLower() == tagName.ToLower()
+			).SingleOrDefault();
+
+			if (elementTag != null) {
+				Console.WriteLine("find " + tagName + "!!");
+				//var tagRuns = elementTag.Parent.Parent.Descendants().ToArray();
+				Table[] tagRuns = elementTag.Parent.Parent.Descendants<Table>().ToArray();
+				foreach (var tagRun in tagRuns) {
+					body.AppendChild(tagRun.CloneNode(true));
+				}
+			}
+		}
+
 		private static void copyTag3(WordprocessingDocument tmpDoc, WordprocessingDocument outDoc, string tagName) {
 			Body body = outDoc.MainDocumentPart.Document.Body;
 			Tag elementTag = tmpDoc.MainDocumentPart.RootElement.Descendants<Tag>()
@@ -195,13 +384,14 @@ namespace TestConsole {
 			).SingleOrDefault();
 
 			if (elementTag != null) {
-				Console.WriteLine("start find " + tagName + "..");
+				Console.WriteLine("find " + tagName + "!!");
 				var tagRuns = elementTag.Parent.Parent.Descendants<Paragraph>().ToArray();
 				foreach (var tagRun in tagRuns) {
 					body.AppendChild(tagRun.CloneNode(true));
 				}
 			}
 		}
+
 		private static Paragraph[] copyTag4(WordprocessingDocument doc, string tagName) {
 			List<Paragraph> arrElement = new List<Paragraph>();
 			Tag elementTag = doc.MainDocumentPart.RootElement.Descendants<Tag>()
@@ -209,7 +399,7 @@ namespace TestConsole {
 				element => element.Val.Value.ToLower() == tagName.ToLower()
 			).SingleOrDefault();
 
-			Console.WriteLine("start find " + tagName + "..");
+			//Console.WriteLine("start find " + tagName + "..");
 			if (elementTag != null) {
 				Console.WriteLine("find " + tagName + "!!");
 
@@ -228,7 +418,7 @@ namespace TestConsole {
 				element => element.Val.Value.ToLower() == tagName.ToLower()
 			).SingleOrDefault();
 
-			Console.WriteLine("start find " + tagName + "..");
+			//Console.WriteLine("start find " + tagName + "..");
 			if (elementTag != null) {
 				Console.WriteLine("find " + tagName + "!!");
 
@@ -277,9 +467,15 @@ namespace TestConsole {
 		public static Run GenerateImageRun(WordprocessingDocument wordDoc, ImageData img) {
 			MainDocumentPart mainPart = wordDoc.MainDocumentPart;
 
+			//ImagePart imagePart = mainPart.AddImagePart(ImagePartType.Jpeg);
+			//var relationshipId = mainPart.GetIdOfPart(imagePart);
+			//imagePart.FeedData(img.getDataStream());
+
 			ImagePart imagePart = mainPart.AddImagePart(ImagePartType.Jpeg);
-			var relationshipId = mainPart.GetIdOfPart(imagePart);
-			imagePart.FeedData(img.getDataStream());
+			using (FileStream stream = new FileStream(imgFile, FileMode.Open)) {
+				imagePart.FeedData(stream);
+			}
+			string relationshipId = mainPart.GetIdOfPart(imagePart);
 
 			// Define the reference of the image.
 			var element =
@@ -348,7 +544,7 @@ namespace TestConsole {
 						 DistanceFromBottom = (UInt32Value)0U,
 						 DistanceFromLeft = (UInt32Value)0U,
 						 DistanceFromRight = (UInt32Value)0U,
-						// EditId = "50D07946"
+						 //EditId = "50D07946"
 					 });
 			return new Run(element);
 		}
