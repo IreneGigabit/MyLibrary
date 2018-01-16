@@ -66,7 +66,15 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="brp63print_IE.aspx" />
+    <Content Include="DocxTester.aspx" />
     <Content Include="packages.config" />
+    <Content Include="ReportTemplate\00基本資料表.docx" />
+    <Content Include="ReportTemplate\01_發明專利申請書.docx" />
+    <Content Include="ReportTemplate\01發明專利申請書.docx" />
+    <Content Include="ReportTemplate\01發明專利申請書_img.docx" />
+    <Content Include="ReportTemplate\FE9團體標章註冊申請書.docx" />
+    <Content Include="ReportTemplate\[團體標章註冊申請書].docx" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -79,17 +87,29 @@
     <Content Include="EncodeTester.aspx" />
     <Content Include="LINQPadExtTester.aspx" />
     <Content Include="RepeaterTester.aspx" />
+    <Content Include="ReportTemplate\01發明專利申請書.xml" />
+    <Content Include="ReportTemplate\66824.jpg" />
     <Content Include="Web.config" />
     <Content Include="ExcelTester.aspx" />
     <Content Include="WebServiceTester.asmx" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="App_Code\IpoReport.cs" />
+    <Content Include="App_Code\server_code.cs" />
+    <Content Include="App_Code\DataExt.cs" />
     <Compile Include="DataExtTester.aspx.cs">
       <DependentUpon>DataExtTester.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="DataExtTester.aspx.designer.cs">
       <DependentUpon>DataExtTester.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="DocxTester.aspx.cs">
+      <DependentUpon>DocxTester.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="DocxTester.aspx.designer.cs">
+      <DependentUpon>DocxTester.aspx</DependentUpon>
     </Compile>
     <Compile Include="EncodeTester.aspx.cs">
       <DependentUpon>EncodeTester.aspx</DependentUpon>
@@ -120,6 +140,7 @@
     <Compile Include="ExcelTester.aspx.designer.cs">
       <DependentUpon>ExcelTester.aspx</DependentUpon>
     </Compile>
+    <Compile Include="ReportTemplate\IE1.cs" />
     <Compile Include="WebServiceTester.asmx.cs">
       <DependentUpon>WebServiceTester.asmx</DependentUpon>
       <SubType>Component</SubType>

@@ -26,14 +26,269 @@ namespace TestConsole {
 			//readTag();
 			//cloneDoc();
 			//imageDoc();
-			//mergeWord();
-			//mergeWordEdit();
-			cloneStreamDoc();
+			//cloneStreamDoc();
 			//cloneStreamDocasFile();
+			//mergeWordEdit();
+			mergeWordNew();
 			Process.Start(outputFile);
 			Console.ReadLine();
 		}
 
+		#region 合併word且修改
+		public static void mergeWordNew() {
+			string templateFile = CurrDir + @"\FE9[團體標章註冊申請書].docx";
+			string baseFile = CurrDir + @"\00基本資料表.docx";
+
+
+			byte[] tempArray = File.ReadAllBytes(templateFile);
+			byte[] baseArray = File.ReadAllBytes(baseFile);
+			byte[] outArray = File.ReadAllBytes(templateFile);
+
+			MemoryStream tempMem = new MemoryStream();
+			tempMem.Write(tempArray, 0, (int)tempArray.Length);
+			MemoryStream baseMem = new MemoryStream();
+			baseMem.Write(baseArray, 0, (int)baseArray.Length);
+			MemoryStream outMem = new MemoryStream();
+			outMem.Write(outArray, 0, (int)outArray.Length);
+
+			WordprocessingDocument tempDoc = WordprocessingDocument.Open(tempMem, false);
+			WordprocessingDocument baseDoc = WordprocessingDocument.Open(baseMem, false);
+			WordprocessingDocument outDoc = WordprocessingDocument.Open(outMem, true);
+
+			try {
+				Body body = outDoc.MainDocumentPart.Document.Body;
+				//SectionProperties[] tempfoot = outDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().ToArray();
+				//SectionProperties[] basefoot = baseDoc.MainDocumentPart.Document.Body.Descendants<SectionProperties>().ToArray();
+
+				body.RemoveAllChildren<SdtElement>();
+				body.RemoveAllChildren<Paragraph>();
+				body.RemoveAllChildren<SectionProperties>();
+
+				body.Append(copyTag2(tempDoc, "title"));
+				body.Append(copyTag2(tempDoc, "block1"));
+				PasteBookmarkText(outDoc.MainDocumentPart, "seq_no", "NT66824(20180111)");
+				PasteBookmarkText(outDoc.MainDocumentPart, "appl_name", "FE9測試");
+				PasteBookmarkText(outDoc.MainDocumentPart, "color", "彩色");
+				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageData(imgFile))));
+				body.Append(copyTag2(tempDoc, "b_apcust"));//申請人
+				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_country", "TW中華民國");
+				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_cname", "英業達股份有限公司");
+				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_ename", "INVENTEC CORPORATION");
+				body.Append(copyTag2(tempDoc, "b_agent"));//代理人
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt1_name", "高,玉駿");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt2_name", "楊,祺雄");
+				body.Append(copyTag2(tempDoc, "b_content"));//表彰內容
+				PasteBookmarkText(outDoc.MainDocumentPart, "good_name", "英業達股份有限公司");
+				body.Append(copyTag2(tempDoc, "b_fees"));//繳費資訊
+				PasteBookmarkText(outDoc.MainDocumentPart, "pay_fees", "4700");
+				PasteBookmarkText(outDoc.MainDocumentPart, "rectitle_name", "英業達股份有限公司");
+				body.Append(copyTag2(tempDoc, "b_attach"));//附送書件
+				body.Append(copyTag2(tempDoc, "b_sign"));//具結
+
+				string refId0 = string.Format("foot_{0}", Guid.NewGuid().ToString().Substring(0, 8));
+				FooterPart themePart0 = (FooterPart)tempDoc.MainDocumentPart.FooterParts.FirstOrDefault();
+				var relationshipId0 = tempDoc.MainDocumentPart.GetIdOfPart(themePart0);
+				outDoc.MainDocumentPart.AddPart(themePart0, refId0);
+				
+				IEnumerable<SectionProperties> sections0 = tempDoc.MainDocumentPart.Document.Body.Elements<SectionProperties>();
+				SectionProperties bfoot0 = (SectionProperties)sections0.FirstOrDefault().CloneNode(true);
+				FooterReference bid0 = bfoot0.GetFirstChild<FooterReference>();
+				bid0.Id = refId0;
+				body.AppendChild(new Paragraph(new ParagraphProperties(bfoot0)));//頁尾+分節
+
+				body.Append(copyTag2(baseDoc, "base_title"));//抬頭
+				body.Append(copyTag2(baseDoc, "base_apcust"));//申請人
+				PasteBookmarkText(outDoc.MainDocumentPart, "apply_num", "1");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_country", "TW中華民國");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_class", "法人公司機關學校");
+				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_no", "04322046");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_cname_title", "中文名稱");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_cname", "英業達股份有限公司");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_ename_title", "英文名稱");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_ename", "INVENTEC CORPORATION");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_live_country", "TW中華民國");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_zip", "840");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_addr", "高雄市大樹區學城路1段9、13、15、17、19、21、23號");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_eddr", "abc");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_crep", "堃峯");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_erep", "Lee &Richard");
+				body.Append(copyTag2(baseDoc, "base_agent"));//代理人
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_id1", "B100379440");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_name1", "高,玉駿");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_zip1", "105");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_addr1", "高,玉駿");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agatt_tel1", "02-77028299#261");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agatt_fax1", "02-77028289");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_id2", "M120741174");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_name2", "楊,祺雄");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_zip2", "105");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_addr2", "高,玉駿");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agatt_tel2", "02-77028299#261");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agatt_fax2", "02-77028289");
+				//copyTag5(baseDoc, outDoc, "b_table");//表格
+
+				string refId = string.Format("foot_{0}", Guid.NewGuid().ToString().Substring(0, 8));
+				FooterPart themePart1 = (FooterPart)baseDoc.MainDocumentPart.FooterParts.FirstOrDefault();
+				var relationshipId = baseDoc.MainDocumentPart.GetIdOfPart(themePart1);
+				outDoc.MainDocumentPart.AddPart(themePart1, refId);
+
+				IEnumerable<SectionProperties> sections = baseDoc.MainDocumentPart.Document.Body.Elements<SectionProperties>();
+				SectionProperties bfoot = (SectionProperties)sections.FirstOrDefault().CloneNode(true);
+				FooterReference bid = bfoot.GetFirstChild<FooterReference>();
+				Console.WriteLine("Relation=" + bid.Id);
+				bid.Id = refId;
+				
+				FooterPart elementTag = baseDoc.MainDocumentPart.FooterParts
+				.Where(
+					element => baseDoc.MainDocumentPart.GetIdOfPart(element) == "rId7"
+				).SingleOrDefault();
+				Console.WriteLine(elementTag == null ? "rId7 not find.." : "rId7 find!!");
+
+				IEnumerable<FooterPart> secs = baseDoc.MainDocumentPart.FooterParts;
+				foreach (FooterPart secPr in secs) {
+					Console.WriteLine("part=" + baseDoc.MainDocumentPart.GetIdOfPart(secPr) + "!!");
+				}
+				//ReferenceRelationship rr = baseDoc.MainDocumentPart.GetReferenceRelationship("rId7");
+				//Console.WriteLine("Relation=" + rr.RelationshipType);
+
+				//body.AppendChild(new Paragraph(new ParagraphProperties(basefoot[0].CloneNode(true))));//頁尾
+				body.Append(bfoot);
+
+
+				outDoc.MainDocumentPart.Document.Save();
+				outDoc.Close();
+
+				using (FileStream fileStream = new FileStream(outputFile, FileMode.Create)) {
+					outMem.Position = 0;
+					outMem.WriteTo(fileStream);
+				}
+			}
+			finally {
+				//if (outDoc.Dispose()!=null) outDoc.Close();
+				outDoc.Dispose();
+				baseDoc.Dispose();
+				tempDoc.Dispose();
+				outMem.Close();
+				baseMem.Close();
+				tempMem.Close();
+			}
+		}
+		#endregion
+
+
+		#region 合併word且修改
+		public static void mergeWordEdit() {
+			string templateFile = CurrDir + @"\FE9[團體標章註冊申請書].docx";
+			string baseFile = CurrDir + @"\00基本資料表.docx";
+
+			byte[] tempArray = File.ReadAllBytes(templateFile);
+			byte[] baseArray = File.ReadAllBytes(baseFile);
+			byte[] outArray = File.ReadAllBytes(templateFile);
+
+			MemoryStream tempMem = new MemoryStream();
+			tempMem.Write(tempArray, 0, (int)tempArray.Length);
+			MemoryStream baseMem = new MemoryStream();
+			baseMem.Write(baseArray, 0, (int)baseArray.Length);
+			MemoryStream outMem = new MemoryStream();
+			outMem.Write(outArray, 0, (int)outArray.Length);
+
+			WordprocessingDocument tempDoc = WordprocessingDocument.Open(tempMem, false);
+			WordprocessingDocument baseDoc = WordprocessingDocument.Open(baseMem, false);
+			WordprocessingDocument outDoc = WordprocessingDocument.Open(outMem, true);
+
+			try {
+				Body body = outDoc.MainDocumentPart.Document.Body;
+				SectionProperties[] tempfoot = outDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().ToArray();
+				SectionProperties[] basefoot = baseDoc.MainDocumentPart.Document.Body.Descendants<SectionProperties>().ToArray();
+
+				body.RemoveAllChildren<SdtElement>();
+				body.RemoveAllChildren<Paragraph>();
+				body.RemoveAllChildren<SectionProperties>();
+
+				body.Append(copyTag2(tempDoc, "title"));
+				body.Append(copyTag2(tempDoc, "block1"));
+				PasteBookmarkText(outDoc.MainDocumentPart, "seq_no", "NT66824(20180111)");
+				PasteBookmarkText(outDoc.MainDocumentPart, "appl_name", "FE9測試");
+				PasteBookmarkText(outDoc.MainDocumentPart, "color", "彩色");
+				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageData(imgFile))));
+				body.Append(copyTag2(tempDoc, "b_apcust"));//申請人
+				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_country", "TW中華民國");
+				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_cname", "英業達股份有限公司");
+				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_ename", "INVENTEC CORPORATION");
+				body.Append(copyTag2(tempDoc, "b_agent"));//代理人
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt1_name", "高,玉駿");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt2_name", "楊,祺雄");
+				body.Append(copyTag2(tempDoc, "b_content"));//表彰內容
+				PasteBookmarkText(outDoc.MainDocumentPart, "good_name", "英業達股份有限公司");
+				body.Append(copyTag2(tempDoc, "b_fees"));//繳費資訊
+				PasteBookmarkText(outDoc.MainDocumentPart, "pay_fees", "4700");
+				PasteBookmarkText(outDoc.MainDocumentPart, "rectitle_name", "英業達股份有限公司");
+				body.Append(copyTag2(tempDoc, "b_attach"));//附送書件
+				body.Append(copyTag2(tempDoc, "b_sign"));//具結
+				body.AppendChild(new Paragraph(new ParagraphProperties(tempfoot[0].CloneNode(true))));//頁尾+換頁
+
+				body.Append(copyTag2(baseDoc, "base_title"));//抬頭
+				body.Append(copyTag2(baseDoc, "base_apcust"));//申請人
+				PasteBookmarkText(outDoc.MainDocumentPart, "apply_num", "1");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_country", "TW中華民國");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_class", "法人公司機關學校");
+				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_no", "04322046");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_cname_title", "中文名稱");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_cname", "英業達股份有限公司");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_ename_title", "英文名稱");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_ename", "INVENTEC CORPORATION");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_live_country", "TW中華民國");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_zip", "840");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_addr", "高雄市大樹區學城路1段9、13、15、17、19、21、23號");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_eddr", "abc");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_crep", "堃峯");
+				PasteBookmarkText(outDoc.MainDocumentPart, "ap_erep", "Lee &Richard");
+				body.Append(copyTag2(baseDoc, "base_agent"));//代理人
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_id1", "B100379440");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_name1", "高,玉駿");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_zip1", "105");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_addr1", "高,玉駿");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agatt_tel1", "02-77028299#261");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agatt_fax1", "02-77028289");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_id2", "M120741174");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_name2", "楊,祺雄");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_zip2", "105");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agt_addr2", "高,玉駿");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agatt_tel2", "02-77028299#261");
+				PasteBookmarkText(outDoc.MainDocumentPart, "agatt_fax2", "02-77028289");
+				//copyTag5(baseDoc, outDoc, "b_table");//表格
+
+				string refId =string.Format("IMG_{0}", Guid.NewGuid().ToString().Substring(0, 8));
+				FooterPart themePart1 = (FooterPart)baseDoc.MainDocumentPart.FooterParts.FirstOrDefault();
+				var relationshipId = baseDoc.MainDocumentPart.GetIdOfPart(themePart1);
+				outDoc.MainDocumentPart.AddPart(themePart1, refId);
+				IEnumerable<SectionProperties> sections = baseDoc.MainDocumentPart.Document.Body.Elements<SectionProperties>();
+				SectionProperties bfoot = (SectionProperties)sections.FirstOrDefault().CloneNode(true);
+				FooterReference bid = bfoot.GetFirstChild<FooterReference>();
+				bid.Id = refId;
+				//body.AppendChild(new Paragraph(new ParagraphProperties(basefoot[0].CloneNode(true))));//頁尾
+				body.Append(bfoot);
+
+
+				outDoc.MainDocumentPart.Document.Save();
+				outDoc.Close();
+
+				using (FileStream fileStream = new FileStream(outputFile, FileMode.Create)) {
+					outMem.Position = 0;
+					outMem.WriteTo(fileStream);
+				}
+			}
+			finally {
+				//if (outDoc.Dispose()!=null) outDoc.Close();
+				outDoc.Dispose();
+				baseDoc.Dispose();
+				tempDoc.Dispose();
+				outMem.Close();
+				baseMem.Close();
+				tempMem.Close();
+			}
+		}
+		#endregion
 
 		#region 複製範本(範本memory,輸出file)圖檔OK!!
 		private static void cloneStreamDocasFile() {
@@ -132,70 +387,6 @@ namespace TestConsole {
 				tempDoc.Close();
 				outMem.Close();
 				tempMem.Close();
-			}
-		}
-		#endregion
-
-		#region 合併word且修改
-		public static void mergeWordEdit() {
-			string templateFile1 = CurrDir + @"\01發明專利申請書.docx";
-			string templateFile2 = CurrDir + @"\00基本資料表.docx";
-
-			System.IO.File.Copy(templateFile1, outputFile, true);
-			WordprocessingDocument tempDoc = WordprocessingDocument.Open(templateFile1, false);
-			using (WordprocessingDocument outDoc = WordprocessingDocument.Open(outputFile, true)) {
-				SectionProperties foot = (SectionProperties)outDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().FirstOrDefault().CloneNode(true);
-				outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SdtElement>();
-				outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<Paragraph>();
-				outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SectionProperties>();
-
-				Body body = outDoc.MainDocumentPart.Document.Body;
-
-				body.Append(copyTag2(tempDoc, "b_title"));
-				//body.AppendChild(new Paragraph());//空白行
-				copyTag3(tempDoc, outDoc, "Block1");
-				//body.Append(copyTag2(tempDoc, "Block1"));
-				PasteBookmarkText(outDoc.MainDocumentPart, "seq_no", "NT66824(20180111)");
-				PasteBookmarkText(outDoc.MainDocumentPart, "appl_name", "FE9測試");
-				PasteBookmarkText(outDoc.MainDocumentPart, "color", "彩色");
-				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageData(imgFile))));
-
-				//body.AppendChild(new Paragraph( new Run( new LastRenderedPageBreak(), new Text("Last text on the page"))));//?
-				//body.AppendChild(new Paragraph(new Run(new LastRenderedPageBreak(), foot1)));//?
-				body.AppendChild(new Paragraph(new ParagraphProperties(foot)));//頁尾+換頁
-				//body.AppendChild(new Paragraph(new Run(new Break() { Type = BreakValues.Page })));//換頁
-				//body.AppendChild(foot);//頁尾
-
-				string altChunkId = "AltChunkId" + DateTime.Now.Ticks.ToString().Substring(0, 2);
-				AlternativeFormatImportPart chunk = outDoc.MainDocumentPart.AddAlternativeFormatImportPart(DocumentFormat.OpenXml.Packaging.AlternativeFormatImportPartType.WordprocessingML, altChunkId);
-				using (FileStream fileStream = File.Open(templateFile2, FileMode.Open)) {
-					chunk.FeedData(fileStream);
-				}
-				AltChunk altChunk = new DocumentFormat.OpenXml.Wordprocessing.AltChunk();
-				altChunk.Id = altChunkId;
-				//mainPart.Document.Body.InsertAfter(altChunk, mainPart.Document.Body.Elements<Paragraph>().Last());
-				body.Append(altChunk);
-			}
-		}
-		#endregion
-
-		#region 合併word
-		public static void mergeWord() {
-			string templateFile1 = CurrDir + @"\01發明專利申請書.docx";
-			string templateFile2 = CurrDir + @"\00基本資料表.docx";
-			using (WordprocessingDocument myDoc = DocumentFormat.OpenXml.Packaging.WordprocessingDocument.Open(templateFile1, true)) {
-				string altChunkId = "AltChunkId" + DateTime.Now.Ticks.ToString().Substring(0, 2);
-				MainDocumentPart mainPart = myDoc.MainDocumentPart;
-
-				AlternativeFormatImportPart chunk = mainPart.AddAlternativeFormatImportPart(DocumentFormat.OpenXml.Packaging.AlternativeFormatImportPartType.WordprocessingML, altChunkId);
-				using (FileStream fileStream = File.Open(templateFile2, FileMode.Open)) {
-					chunk.FeedData(fileStream);
-				}
-				AltChunk altChunk = new DocumentFormat.OpenXml.Wordprocessing.AltChunk();
-				altChunk.Id = altChunkId;
-				//mainPart.Document.Body.InsertAfter(altChunk, mainPart.Document.Body.Elements<Paragraph>().Last());
-				mainPart.Document.Body.Append(altChunk);
-				mainPart.Document.Save();
 			}
 		}
 		#endregion
@@ -440,26 +631,50 @@ namespace TestConsole {
 					string id = bookmarkStart.Id.Value;
 					BookmarkEnd bookmarkEnd = bookMarkEnds.Where(i => i.Id.Value == id).First();
 
-					//var bookmarkText = bookmarkEnd.NextSibling();
+					////var bookmarkText = bookmarkEnd.NextSibling();
+					//Run bookmarkRun = bookmarkStart.NextSibling<Run>();
+					//if (bookmarkRun != null) {
+					//	string[] txtArr = text.Split('\n');
+					//	for (int i = 0; i < txtArr.Length; i++) {
+					//		if (i == 0) {
+					//			Console.WriteLine("insert single!!");
+					//			bookmarkRun.GetFirstChild<Text>().Text = txtArr[i];
+					//		} else {
+					//			Console.WriteLine("insert multi!!");
+					//			bookmarkRun.Append(new Break());
+					//			bookmarkRun.Append(new Text(txtArr[i]));
+					//		}
+					//	}
+					//	//bookmarkRun.GetFirstChild<Text>().Text = text;
+					//	//bookmarkRun.Append(new Break());
+					//	//bookmarkRun.Append(new Text("換行"));
+					//}
+					//bookmarkStart.Remove();
+					//bookmarkEnd.Remove();
+
 					Run bookmarkRun = bookmarkStart.NextSibling<Run>();
 					if (bookmarkRun != null) {
+						Run tempRun = bookmarkRun;
 						string[] txtArr = text.Split('\n');
 						for (int i = 0; i < txtArr.Length; i++) {
 							if (i == 0) {
-								Console.WriteLine("insert single!!");
 								bookmarkRun.GetFirstChild<Text>().Text = txtArr[i];
 							} else {
-								Console.WriteLine("insert multi!!");
 								bookmarkRun.Append(new Break());
 								bookmarkRun.Append(new Text(txtArr[i]));
 							}
 						}
-						//bookmarkRun.GetFirstChild<Text>().Text = text;
-						//bookmarkRun.Append(new Break());
-						//bookmarkRun.Append(new Text("換行"));
+						int j = 0;
+						while (tempRun.NextSibling() != null && tempRun.NextSibling().GetType() != typeof(BookmarkEnd)) {
+							j++;
+							tempRun.NextSibling().Remove();
+							if (j >= 20)
+								break;
+						}
 					}
 					bookmarkStart.Remove();
-					bookmarkEnd.Remove();
+					if (bookmarkEnd != null) bookmarkEnd.Remove();
+
 				}
 			}
 		}
