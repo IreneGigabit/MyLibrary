@@ -69,7 +69,7 @@ namespace TestConsole {
 				PasteBookmarkText(outDoc.MainDocumentPart, "seq_no", "NT66824(20180111)");
 				PasteBookmarkText(outDoc.MainDocumentPart, "appl_name", "FE9測試");
 				PasteBookmarkText(outDoc.MainDocumentPart, "color", "彩色");
-				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageData(imgFile))));
+				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageFile(imgFile))));
 				body.Append(copyTag2(tempDoc, "b_apcust"));//申請人
 				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_country", "TW中華民國");
 				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_cname", "英業達股份有限公司");
@@ -210,7 +210,7 @@ namespace TestConsole {
 				PasteBookmarkText(outDoc.MainDocumentPart, "seq_no", "NT66824(20180111)");
 				PasteBookmarkText(outDoc.MainDocumentPart, "appl_name", "FE9測試");
 				PasteBookmarkText(outDoc.MainDocumentPart, "color", "彩色");
-				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageData(imgFile))));
+				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageFile(imgFile))));
 				body.Append(copyTag2(tempDoc, "b_apcust"));//申請人
 				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_country", "TW中華民國");
 				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_cname", "英業達股份有限公司");
@@ -318,7 +318,7 @@ namespace TestConsole {
 				PasteBookmarkText(outDoc.MainDocumentPart, "seq", "NT66824(20180111)");
 				PasteBookmarkText(outDoc.MainDocumentPart, "cappl_name", "FE9測試");
 				PasteBookmarkText(outDoc.MainDocumentPart, "eappl_name", "colors test");
-				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageData(imgFile))));
+				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageFile(imgFile))));
 				copyTag5(tempDoc, outDoc, "b_table");
 				outDoc.MainDocumentPart.Document.Body.InsertAt(new Paragraph(new Run(new Text("Newly inserted paragraph."))), 0);
 				body.AppendChild(new Paragraph(new ParagraphProperties(foot[0].CloneNode(true))));//頁尾+換頁
@@ -367,7 +367,7 @@ namespace TestConsole {
 				PasteBookmarkText(outDoc.MainDocumentPart, "seq", "NT66824(20180111)");
 				PasteBookmarkText(outDoc.MainDocumentPart, "cappl_name", "FE9測試");
 				PasteBookmarkText(outDoc.MainDocumentPart, "eappl_name", "colors test");
-				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageData(imgFile))));
+				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageFile(imgFile))));
 				copyTag5(tempDoc, outDoc, "b_table");
 
 				outDoc.MainDocumentPart.Document.Body.InsertAt(new Paragraph(new Run(new Text("Newly inserted paragraph."))), 0);
@@ -441,8 +441,8 @@ namespace TestConsole {
 			File.Copy(templateFile, outputFile,true);
 			using (WordprocessingDocument document = WordprocessingDocument.Open(outputFile, true)) {
 				Body body = document.MainDocumentPart.Document.Body;
-				body.AppendChild(new Paragraph(GenerateImageRun(document, new ImageData(CurrDir + @"\66824.jpg"))));
-				var cat2Img = new ImageData(CurrDir + @"\66824.jpg")
+				body.AppendChild(new Paragraph(GenerateImageRun(document, new ImageFile(CurrDir + @"\66824.jpg"))));
+				var cat2Img = new ImageFile(CurrDir + @"\66824.jpg")
 				{
 					Width = 8,
 					Height = 8
@@ -487,7 +487,7 @@ namespace TestConsole {
 				PasteBookmarkText(outDoc.MainDocumentPart, "seq_no", "NT66824(20180111)");
 				PasteBookmarkText(outDoc.MainDocumentPart, "appl_name", "FE9測試");
 				PasteBookmarkText(outDoc.MainDocumentPart, "color", "彩色");
-				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageData(imgFile))));
+				body.AppendChild(new Paragraph(GenerateImageRun(outDoc, new ImageFile(imgFile))));
 				body.Append(copyTag2(tempDoc, "b_apcust"));//申請人
 				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_country", "TW中華民國");
 				PasteBookmarkText(outDoc.MainDocumentPart, "apcust_cname", "英業達股份有限公司");
@@ -679,7 +679,7 @@ namespace TestConsole {
 			}
 		}
 
-		public static Run GenerateImageRun(WordprocessingDocument wordDoc, ImageData img) {
+		public static Run GenerateImageRun(WordprocessingDocument wordDoc, ImageFile img) {
 			MainDocumentPart mainPart = wordDoc.MainDocumentPart;
 
 			//ImagePart imagePart = mainPart.AddImagePart(ImagePartType.Jpeg);

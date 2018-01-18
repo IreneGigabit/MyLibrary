@@ -12,19 +12,18 @@ using A = DocumentFormat.OpenXml.Drawing;
 using DW = DocumentFormat.OpenXml.Drawing.Wordprocessing;
 using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
 using System.Drawing;
+using MyLibrary;
 
 /// <summary>
 /// Docx 操作類別(use OpenXml SDK)
 /// </summary>
 public class OpenXmlHelper {
-	//protected SectionProperties[] footer = null;
-	public WordprocessingDocument tempDoc = null;
-	public WordprocessingDocument baseDoc = null;
-	public WordprocessingDocument outDoc = null;
-	protected MemoryStream tempMem = new MemoryStream();
-	protected MemoryStream baseMem = new MemoryStream();
+	protected WordprocessingDocument outDoc = null;
 	protected MemoryStream outMem = new MemoryStream();
 	protected Body outBody = null;
+	Dictionary<string, WordprocessingDocument> tplDoc = new Dictionary<string, WordprocessingDocument>();
+	protected string defTplDocName = "";
+	Dictionary<string, MemoryStream> tplMem = new Dictionary<string, MemoryStream>();
 
 	public OpenXmlHelper() {
 	}
@@ -34,38 +33,70 @@ public class OpenXmlHelper {
 	/// 關閉
 	/// </summary>
 	public void Dispose() {
-		if (this.tempDoc != null) tempDoc.Dispose();
+		//if (this.tplDoc != null) tplDoc.Dispose();
 		if (this.outDoc != null) outDoc.Dispose();
-		if (this.tempMem != null) tempMem.Close();
+		//if (this.tplMem != null) tplMem.Close();
 		if (this.outMem != null) outMem.Close();
+		foreach (KeyValuePair<string, WordprocessingDocument> item in tplDoc) {
+			item.Value.Dispose();
+		}
+		foreach (KeyValuePair<string, MemoryStream> item in tplMem) {
+			item.Value.Close();
+			item.Value.Dispose();
+		}
 		HttpContext.Current.Response.End();
 	}
 	#endregion
 
-	#region 複製範本檔
+	#region 建立空白檔案
+	/// <summary>
+	/// 建立空白檔案
+	/// </summary>
+	public void Create() {
+		MemoryStream outMem = new MemoryStream();
+		outDoc = WordprocessingDocument.Create(outMem, WordprocessingDocumentType.Document);
+		MainDocumentPart mainPart = outDoc.AddMainDocumentPart();
+		mainPart.Document = new Document();
+		outBody = mainPart.Document.AppendChild(new Body());
+	}
+	#endregion
+
+	#region 複製範本檔(List)
 	/// <summary>
 	/// 複製範本檔
 	/// </summary>
-	/// <param name="templateFile">申請書範本檔名(實體路徑)</param>
-	/// <param name="baseFile">基本資料表範本檔名(實體路徑)</param>
-	/// <param name="cleanFlag">是否清空內容(只保留版面配置)</param>
-	public void CloneFromFile(string templateFile, string baseFile, bool cleanFlag) {
+	/// <param name="templateList">範本＜別名,檔名(實體路徑)＞</param>
+	public void CloneFromFile(Dictionary<string, string> templateList, bool cleanFlag) {
+		foreach (var x in templateList.Select((Entry, Index) => new { Entry, Index })) {
+			if (x.Index == 0) {
+				byte[] outArray = File.ReadAllBytes(x.Entry.Value);
+				outMem.Write(outArray, 0, (int)outArray.Length);
+				outDoc = WordprocessingDocument.Open(outMem, true);
+				defTplDocName = x.Entry.Key;
+			}
 
-		byte[] tempArray = File.ReadAllBytes(templateFile);
-		byte[] baseArray = File.ReadAllBytes(baseFile);
-		byte[] outArray = File.ReadAllBytes(templateFile);
+			byte[] tplArray = File.ReadAllBytes(x.Entry.Value);
+			//MemoryStream tplMem = new MemoryStream();
+			//tplMem.Write(tplArray, 0, (int)tplArray.Length);
+			tplMem.Add(x.Entry.Key, new MemoryStream());
+			tplMem[x.Entry.Key].Write(tplArray, 0, (int)tplArray.Length);
+			tplDoc.Add(x.Entry.Key, WordprocessingDocument.Open(tplMem[x.Entry.Key], false));
 
-		tempMem.Write(tempArray, 0, (int)tempArray.Length);
-		baseMem.Write(baseArray, 0, (int)baseArray.Length);
-		outMem.Write(outArray, 0, (int)outArray.Length);
+			//	byte[] tplArray = File.ReadAllBytes(templateFile);
+			//	byte[] baseArray = File.ReadAllBytes(baseFile);
+			//	byte[] outArray = File.ReadAllBytes(templateFile);
+			//
+			//	tplMem.Write(tplArray, 0, (int)tplArray.Length);
+			//	baseMem.Write(baseArray, 0, (int)baseArray.Length);
+			//	outMem.Write(outArray, 0, (int)outArray.Length);
+			//
+			//	tplDoc = WordprocessingDocument.Open(tplMem, false);
+			//	baseDoc = WordprocessingDocument.Open(baseMem, false);
+			//	outDoc = WordprocessingDocument.Open(outMem, true);
 
-		tempDoc = WordprocessingDocument.Open(tempMem, false);
-		baseDoc = WordprocessingDocument.Open(baseMem, false);
-		outDoc = WordprocessingDocument.Open(outMem, true);
+		}
 
-		//footer = outDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().ToArray();
-
-		//清空內容
+		//清空輸出檔內容
 		if (cleanFlag) {
 			//outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SdtElement>();
 			//outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<Paragraph>();
@@ -109,18 +140,17 @@ public class OpenXmlHelper {
 	/// 複製範本Block
 	/// </summary>
 	public void CopyBlock(string blockName) {
-		CopyBlock(tempDoc, blockName);
+		CopyBlock(defTplDocName, blockName);
 	}
-	#endregion
 
-	#region 複製範本Block(指定文件)
 	/// <summary>
 	/// 複製範本Block(指定文件)
 	/// </summary>
-	public void CopyBlock(WordprocessingDocument srcDoc, string blockName) {
+	public void CopyBlock(string srcDocName, string blockName) {
+		WordprocessingDocument srcDoc = tplDoc[srcDocName];
 		Tag elementTag = srcDoc.MainDocumentPart.RootElement.Descendants<Tag>()
 		.Where(
-			element => element.Val == blockName
+			element => element.Val.ToString().ToLower() == blockName.ToLower()
 		).SingleOrDefault();
 
 		if (elementTag != null) {
@@ -137,14 +167,22 @@ public class OpenXmlHelper {
 	/// <summary>
 	/// 複製範本Block,回傳List
 	/// </summary>
-	private List<Paragraph> CopyBlockList(string blockName) {
+	public List<Paragraph> CopyBlockList(string blockName) {
+		return CopyBlockList(defTplDocName, blockName);
+	}
+	
+	/// <summary>
+	/// 複製範本Block,回傳List(指定文件)
+	/// </summary>
+	private List<Paragraph> CopyBlockList(string srcDocName,string blockName) {
 		try {
+			WordprocessingDocument srcDoc = tplDoc[srcDocName]; 
 			List<Paragraph> arrElement = new List<Paragraph>();
-			Tag elementTag = tempDoc.MainDocumentPart.RootElement.Descendants<Tag>()
+			Tag elementTag = srcDoc.MainDocumentPart.RootElement.Descendants<Tag>()
 			.Where(
 				element => element.Val.Value.ToLower() == blockName.ToLower()
 			).SingleOrDefault();
-
+	
 			if (elementTag != null) {
 				SdtElement block = (SdtElement)elementTag.Parent.Parent;
 				IEnumerable<Paragraph> tagPars = block.Descendants<Paragraph>();
@@ -165,8 +203,14 @@ public class OpenXmlHelper {
 	/// 複製範本Block,並取代文字
 	/// </summary>
 	public void CloneReplaceBlock(string blockName, string searchStr, string newStr) {
+		CloneReplaceBlock(defTplDocName, blockName, searchStr, newStr);
+	}
+	/// <summary>
+	/// 複製範本Block,並取代文字(指定文件)
+	/// </summary>
+	public void CloneReplaceBlock(string srcDocName, string blockName, string searchStr, string newStr) {
 		try {
-			List<Paragraph> pars = CopyBlockList(blockName);
+			List<Paragraph> pars = CopyBlockList(srcDocName, blockName);
 			for (int i = 0; i < pars.Count; i++) {
 				pars[i] = (new Paragraph(new Run(new Text(pars[i].InnerText.Replace(searchStr, newStr)))));
 			}
@@ -207,7 +251,7 @@ public class OpenXmlHelper {
 					//}
 					Run bookmarkRun = bookmarkStart.NextSibling<Run>();
 					if (bookmarkRun != null) {
-						Run tempRun = bookmarkRun;
+						Run tplRun = bookmarkRun;
 						string[] txtArr = text.Split('\n');
 						for (int i = 0; i < txtArr.Length; i++) {
 							if (i == 0) {
@@ -218,9 +262,9 @@ public class OpenXmlHelper {
 							}
 						}
 						int j = 0;
-						while (tempRun.NextSibling() != null && tempRun.NextSibling().GetType() != typeof(BookmarkEnd)) {
+						while (tplRun.NextSibling() != null && tplRun.NextSibling().GetType() != typeof(BookmarkEnd)) {
 							j++;
-							tempRun.NextSibling().Remove();
+							tplRun.NextSibling().Remove();
 							if (j >= 20)
 								break;
 						}
@@ -242,7 +286,8 @@ public class OpenXmlHelper {
 	/// </summary>
 	/// <param name="sourceDoc">複製來源</param>
 	/// <param name="haveBreak">是否帶分節符號(新頁)</param>
-	public void CopyPageFoot(WordprocessingDocument sourceDoc, bool haveBreak) {
+	public void CopyPageFoot(string srcDocName, bool haveBreak) {
+		WordprocessingDocument sourceDoc = tplDoc[srcDocName];
 		int index = 0;//取消index參數,只抓第1個
 
 		string newRefId = string.Format("foot_{0}", Guid.NewGuid().ToString().Substring(0, 8));
@@ -266,7 +311,7 @@ public class OpenXmlHelper {
 	//private void CopyPageFoot(WordprocessingDocument sourceDoc, int index,bool haveBreak) {
 	//	string refId0 = string.Format("foot_{0}", Guid.NewGuid().ToString().Substring(0, 8));
 	//
-	//	//IEnumerable<SectionProperties> sections0 = tempDoc.MainDocumentPart.Document.Body.Elements<SectionProperties>();
+	//	//IEnumerable<SectionProperties> sections0 = tplDoc.MainDocumentPart.Document.Body.Elements<SectionProperties>();
 	//	SectionProperties[] elementSections = sourceDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().ToArray();
 	//	SectionProperties bfoot0 = (SectionProperties)elementSections[index].CloneNode(true);
 	//	FooterReference bid0 = bfoot0.GetFirstChild<FooterReference>();
@@ -291,8 +336,9 @@ public class OpenXmlHelper {
 	/// <summary>
 	/// 插入圖片
 	/// </summary>
-	public void AppendImage(string imgFilePath) {
-		ImageData img = new ImageData(imgFilePath);
+	//public void AppendImage(string imgStr, bool isBase64, decimal scale) {
+	//	ImageData img= new ImageData(imgStr, isBase64, scale);
+	public void AppendImage(ImageFile img) {
 
 		ImagePart imagePart = outDoc.MainDocumentPart.AddImagePart(ImagePartType.Jpeg);
 		string relationshipId = outDoc.MainDocumentPart.GetIdOfPart(imagePart);
@@ -369,73 +415,4 @@ public class OpenXmlHelper {
 		outDoc.MainDocumentPart.Document.Body.AppendChild(new Paragraph(new Run(element)));
 	}
 	#endregion
-}
-
-public class ImageData {
-	public string FileName = string.Empty;
-
-	public byte[] BinaryData;
-
-	//public Stream DataStream => new MemoryStream(BinaryData);
-	//private Stream DataStream = null;
-
-	public Stream getDataStream() {
-		Stream DataStream = new MemoryStream(BinaryData);
-		return DataStream;
-	}
-
-	public ImagePartType ImageType {
-		get {
-			var ext = Path.GetExtension(FileName).TrimStart('.').ToLower();
-			switch (ext) {
-				case "jpg":
-					return ImagePartType.Jpeg;
-				case "png":
-					return ImagePartType.Png;
-				case "bmp":
-					return ImagePartType.Bmp;
-			}
-			throw new ApplicationException(string.Format("不支援的格式:{0}", ext));
-		}
-	}
-
-	public int SourceWidth;
-	public int SourceHeight;
-	public decimal Width;
-	public decimal Height;
-
-	//public long WidthInEMU => Convert.ToInt64(Width * CM_TO_EMU);
-	private long WidthInEMU = 0;
-	public long GetWidthInEMU() {
-		WidthInEMU = Convert.ToInt64(Width * CM_TO_EMU);
-		return WidthInEMU;
-	}
-
-	//public long HeightInEMU => Convert.ToInt64(Height * CM_TO_EMU);
-	private long HeightInEMU = 0;
-	public long GetHeightInEMU() {
-		HeightInEMU = Convert.ToInt64(Height * CM_TO_EMU);
-		return HeightInEMU;
-	}
-
-	private const decimal INCH_TO_CM = 2.54M;
-	private const decimal CM_TO_EMU = 360000M;
-	public string ImageName;
-
-	public ImageData(string fileName, byte[] data, int dpi) {
-		FileName = fileName;
-		BinaryData = data;
-
-		Bitmap img = new Bitmap(new MemoryStream(data));
-		SourceWidth = img.Width;
-		SourceHeight = img.Height;
-		Width = ((decimal)SourceWidth) / dpi * INCH_TO_CM;
-		Height = ((decimal)SourceHeight) / dpi * INCH_TO_CM;
-		//ImageName = $"IMG_{Guid.NewGuid().ToString().Substring(0, 8)}";
-		ImageName = string.Format("IMG_{0}", Guid.NewGuid().ToString().Substring(0, 8));
-	}
-
-	public ImageData(string fileName) :
-		this(fileName, File.ReadAllBytes(fileName), 300) {
-	}
 }
