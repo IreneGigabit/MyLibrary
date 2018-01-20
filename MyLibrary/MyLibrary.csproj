@@ -31,7 +31,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DocumentFormat.OpenXml">
+    <Reference Include="DocumentFormat.OpenXml, Version=2.0.5022.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\DocumentFormat.OpenXml.dll</HintPath>
     </Reference>
     <Reference Include="itextsharp">
@@ -57,9 +58,10 @@
     <Compile Include="DocxHelper.cs" />
     <Compile Include="EncodeExt.cs" />
     <Compile Include="FormHelper.cs" />
+    <Compile Include="ImageFile.cs" />
     <Compile Include="LINQPadExtensions.cs" />
     <Compile Include="OpenXmlHelper.cs" />
-    <Compile Include="OpenXmlHelperList.cs" />
+    <Compile Include="OpenXmlHelperOld.cs" />
     <Compile Include="PdfPCellExt.cs" />
     <Compile Include="PdfPTableHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -13,12 +13,13 @@ using MyLibrary;
 
 namespace TestConsole {
 	class WordXml_new {
-		private static string CurrDir = System.Environment.CurrentDirectory;
-		static string templateFile = CurrDir + @"\[團體標章註冊申請書].docx";
-		static string outputFile = CurrDir + @"\[團體標章註冊申請書]-NT66824.docx";
-		//static string templateFile = CurrDir + @"\img.docx";
-		//static string outputFile = CurrDir + @"\img-new.doc";
-		static string imgFile = CurrDir + @"\66824.jpg";
+		private static string CurrDir = System.Environment.CurrentDirectory;//Debug路徑
+		static DirectoryInfo dir = new DirectoryInfo(CurrDir);
+		static string BaseDir = dir.Parent.Parent.FullName;//專案路徑
+
+		static string templateFile = BaseDir + @"\testDocument\[團體標章註冊申請書].docx";
+		static string outputFile = BaseDir + @"\testDocument\[團體標章註冊申請書]-NT66824.docx";
+		static string imgFile = BaseDir + @"\testDocument\66824.jpg";
 
 		static void Main(string[] args) {
 			//createXML();
@@ -36,8 +37,8 @@ namespace TestConsole {
 
 		#region 合併word且修改
 		public static void mergeWordNew() {
-			string templateFile = CurrDir + @"\FE9[團體標章註冊申請書].docx";
-			string baseFile = CurrDir + @"\00基本資料表.docx";
+			string templateFile = BaseDir + @"\testDocument\FE9[團體標章註冊申請書].docx";
+			string baseFile = BaseDir + @"\testDocument\00基本資料表.docx";
 
 
 			byte[] tempArray = File.ReadAllBytes(templateFile);

@@ -33,7 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>TestConsole.SplitTester</StartupObject>
+    <StartupObject>TestConsole.DocxTester</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DocumentFormat.OpenXml, Version=2.8.1.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
@@ -54,24 +54,52 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DecodeTester.cs" />
-    <Compile Include="DocxHelperTester.cs" />
+    <Compile Include="DocxTester.cs" />
     <Compile Include="EncodingTester.cs" />
     <Compile Include="PdfPCellExtTester.cs" />
     <Compile Include="PdfPTableHelperTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SplitTester.cs" />
     <Compile Include="WordXml_new.cs" />
-    <Compile Include="WordXml.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="testDocument\00基本資料表.docx" />
+    <None Include="testDocument\01發明專利申請書.docx" />
+    <None Include="testDocument\Credit_letter_apply_one - 複製.pdf" />
+    <None Include="testDocument\Credit_letter_apply_one.pdf" />
+    <None Include="testDocument\FE9[團體標章註冊申請書].docx" />
+    <None Include="testDocument\img-new.docx" />
+    <None Include="testDocument\img.docx" />
+    <None Include="testDocument\new.docx" />
+    <None Include="testDocument\new.pdf" />
+    <None Include="testDocument\NP28758-發明%28原版%29.docx" />
+    <None Include="testDocument\NP28758-發明-20180112 - 複製.docx" />
+    <None Include="testDocument\NP28758-發明-20180112.docx" />
+    <None Include="testDocument\pdf29.pdf" />
+    <None Include="testDocument\[團體標章註冊申請書]-NT66824.doc" />
+    <None Include="testDocument\[團體標章註冊申請書]-NT66824.docx" />
+    <None Include="testDocument\[團體標章註冊申請書].docx" />
+    <None Include="testDocument\商標註冊申請書 - 複製.docx" />
+    <None Include="testDocument\商標註冊申請書.docx" />
+    <None Include="testDocument\商標註冊申請書_old.docx" />
+    <None Include="testDocument\商標註冊申請書_page.docx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MyLibrary\MyLibrary.csproj">
       <Project>{8c807e9c-65f8-4ce9-8cfc-ecce615030c4}</Project>
       <Name>MyLibrary</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="testDocument\66824 - 複製.jpg" />
+    <Content Include="testDocument\66824.jpg" />
+    <Content Include="testDocument\new.xml" />
+    <Content Include="testDocument\[團體標章註冊申請書]-NT66824.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="OutReport\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -9,8 +9,10 @@ using System.Diagnostics;
 
 namespace TestConsole {
 	class EncodingTester {
-		private static string CurrDir = System.Environment.CurrentDirectory;
-		static string outputFile = CurrDir + @"\testfile.txt";
+		private static string CurrDir = System.Environment.CurrentDirectory;//Debug路徑
+		static DirectoryInfo dir = new DirectoryInfo(CurrDir);
+		static string BaseDir = dir.Parent.Parent.FullName;//專案路徑
+		static string outputFile = BaseDir + @"\testDocument\testfile.txt";
 
 		static void Main(string[] args) {
 			DataTable dt = new DataTable();

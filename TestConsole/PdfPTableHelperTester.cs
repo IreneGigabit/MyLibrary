@@ -12,10 +12,12 @@ namespace TestConsole
 {
     class PdfPTableHelperTester
     {
-        private static string CurrDir = System.Environment.CurrentDirectory;
-        static string templateFile = CurrDir + @"\Credit_letter_apply_one.pdf";
-        //static string templateFile = CurrDir + @"\pdf29.pdf";
-        static string outputFile = CurrDir + @"\new.pdf";
+		private static string CurrDir = System.Environment.CurrentDirectory;//Debug路徑
+		static DirectoryInfo dir = new DirectoryInfo(CurrDir);
+		static string BaseDir = dir.Parent.Parent.FullName;//專案路徑
+		static string templateFile = BaseDir + @"\testDocument\Credit_letter_apply_one.pdf";
+		//static string templateFile = BaseDir + @"\testDocument\pdf29.pdf";
+		static string outputFile = BaseDir + @"\testDocument\new.pdf";
 
 
         //static string fontPath = Environment.GetFolderPath(Environment.SpecialFolder.System) + @"\..\Fonts\kaiu.ttf";//標楷體

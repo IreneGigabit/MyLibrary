@@ -44,7 +44,7 @@ public class OpenXmlHelper {
 			item.Value.Close();
 			item.Value.Dispose();
 		}
-		HttpContext.Current.Response.End();
+		if (HttpContext.Current != null) HttpContext.Current.Response.End();
 	}
 	#endregion
 
@@ -76,24 +76,9 @@ public class OpenXmlHelper {
 			}
 
 			byte[] tplArray = File.ReadAllBytes(x.Entry.Value);
-			//MemoryStream tplMem = new MemoryStream();
-			//tplMem.Write(tplArray, 0, (int)tplArray.Length);
 			tplMem.Add(x.Entry.Key, new MemoryStream());
 			tplMem[x.Entry.Key].Write(tplArray, 0, (int)tplArray.Length);
 			tplDoc.Add(x.Entry.Key, WordprocessingDocument.Open(tplMem[x.Entry.Key], false));
-
-			//	byte[] tplArray = File.ReadAllBytes(templateFile);
-			//	byte[] baseArray = File.ReadAllBytes(baseFile);
-			//	byte[] outArray = File.ReadAllBytes(templateFile);
-			//
-			//	tplMem.Write(tplArray, 0, (int)tplArray.Length);
-			//	baseMem.Write(baseArray, 0, (int)baseArray.Length);
-			//	outMem.Write(outArray, 0, (int)outArray.Length);
-			//
-			//	tplDoc = WordprocessingDocument.Open(tplMem, false);
-			//	baseDoc = WordprocessingDocument.Open(baseMem, false);
-			//	outDoc = WordprocessingDocument.Open(outMem, true);
-
 		}
 
 		//清空輸出檔內容
@@ -108,9 +93,9 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 輸出檔案
+	#region 輸出檔案(memory)
 	/// <summary>
-	/// 輸出檔案
+	/// 輸出檔案(memory)
 	/// </summary>
 	public void Flush(string outputName) {
 		outDoc.MainDocumentPart.Document.Save();
@@ -126,6 +111,21 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
+	#region 另存檔案
+	/// <summary>
+	/// 另存檔案
+	/// </summary>
+	public void SaveTo(string outputPath) {
+		outDoc.MainDocumentPart.Document.Save();
+		outDoc.Close();
+		using (FileStream fileStream = new FileStream(outputPath, FileMode.Create)) {
+			outMem.Position = 0;
+			outMem.WriteTo(fileStream);
+		}
+		this.Dispose();
+	}
+	#endregion
+
 	#region 增加段落文字
 	/// <summary>
 	/// 增加段落文字
@@ -135,31 +135,12 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 複製範本Block
+	#region 增加段落
 	/// <summary>
-	/// 複製範本Block
+	/// 增加段落
 	/// </summary>
-	public void CopyBlock(string blockName) {
-		CopyBlock(defTplDocName, blockName);
-	}
-
-	/// <summary>
-	/// 複製範本Block(指定文件)
-	/// </summary>
-	public void CopyBlock(string srcDocName, string blockName) {
-		WordprocessingDocument srcDoc = tplDoc[srcDocName];
-		Tag elementTag = srcDoc.MainDocumentPart.RootElement.Descendants<Tag>()
-		.Where(
-			element => element.Val.ToString().ToLower() == blockName.ToLower()
-		).SingleOrDefault();
-
-		if (elementTag != null) {
-			SdtElement block = (SdtElement)elementTag.Parent.Parent;
-			IEnumerable<Paragraph> tagRuns = block.Descendants<Paragraph>();
-			foreach (Paragraph tagRun in tagRuns) {
-				outBody.Append((OpenXmlElement)tagRun.CloneNode(true));
-			}
-		}
+	public void AddParagraph(Paragraph par) {
+		outDoc.MainDocumentPart.Document.Body.Append(par.CloneNode(true));
 	}
 	#endregion
 
@@ -170,19 +151,19 @@ public class OpenXmlHelper {
 	public List<Paragraph> CopyBlockList(string blockName) {
 		return CopyBlockList(defTplDocName, blockName);
 	}
-	
+
 	/// <summary>
 	/// 複製範本Block,回傳List(指定文件)
 	/// </summary>
-	private List<Paragraph> CopyBlockList(string srcDocName,string blockName) {
+	private List<Paragraph> CopyBlockList(string srcDocName, string blockName) {
 		try {
-			WordprocessingDocument srcDoc = tplDoc[srcDocName]; 
+			WordprocessingDocument srcDoc = tplDoc[srcDocName];
 			List<Paragraph> arrElement = new List<Paragraph>();
 			Tag elementTag = srcDoc.MainDocumentPart.RootElement.Descendants<Tag>()
 			.Where(
 				element => element.Val.Value.ToLower() == blockName.ToLower()
 			).SingleOrDefault();
-	
+
 			if (elementTag != null) {
 				SdtElement block = (SdtElement)elementTag.Parent.Parent;
 				IEnumerable<Paragraph> tagPars = block.Descendants<Paragraph>();
@@ -198,17 +179,65 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
+	#region 複製範本Block
+	/// <summary>
+	/// 複製範本Block
+	/// </summary>
+	public void CopyBlock(string blockName) {
+		foreach (var par in CopyBlockList(blockName)) {
+			outBody.Append(par.CloneNode(true));
+		}
+	}
+
+	/// <summary>
+	/// 複製範本Block(指定文件)
+	/// </summary>
+	public void CopyBlock(string srcDocName, string blockName) {
+		foreach (var par in CopyBlockList(srcDocName,blockName)) {
+			outBody.Append(par.CloneNode(true));
+		}
+	}
+	#endregion
+
+	#region 複製範本Block,回傳Dictionary
+	/// <summary>
+	/// 複製範本Block,回傳Dictionary
+	/// </summary>
+	public Dictionary<int,Paragraph> CopyBlockDict(string blockName) {
+		return CopyBlockDict(defTplDocName, blockName);
+	}
+
+	/// <summary>
+	/// 複製範本Block,回傳Dictionary(指定文件)
+	/// </summary>
+	public Dictionary<int, Paragraph> CopyBlockDict(string srcDocName, string blockName) {
+		try {
+			WordprocessingDocument srcDoc = tplDoc[srcDocName];
+			Dictionary<int, Paragraph> dictElement = new Dictionary<int, Paragraph>();
+
+			foreach (var x in CopyBlockList(srcDocName,blockName).Select((Entry, Index) => new { Entry, Index })) {
+				dictElement.Add(x.Index + 1, x.Entry);
+			}
+			return dictElement;
+		}
+		catch (Exception ex) {
+			throw new Exception("複製範本Block!!(" + blockName + ")", ex);
+		}
+	}
+	#endregion
+
 	#region 複製範本Block,並取代文字
 	/// <summary>
 	/// 複製範本Block,並取代文字
 	/// </summary>
-	public void CloneReplaceBlock(string blockName, string searchStr, string newStr) {
-		CloneReplaceBlock(defTplDocName, blockName, searchStr, newStr);
+	public void CopyReplaceBlock(string blockName, string searchStr, string newStr) {
+		CopyReplaceBlock(defTplDocName, blockName, searchStr, newStr);
 	}
+
 	/// <summary>
 	/// 複製範本Block,並取代文字(指定文件)
 	/// </summary>
-	public void CloneReplaceBlock(string srcDocName, string blockName, string searchStr, string newStr) {
+	public void CopyReplaceBlock(string srcDocName, string blockName, string searchStr, string newStr) {
 		try {
 			List<Paragraph> pars = CopyBlockList(srcDocName, blockName);
 			for (int i = 0; i < pars.Count; i++) {

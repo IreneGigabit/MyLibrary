@@ -66,7 +66,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="brp63print_IE.aspx" />
+    <Content Include="brp63print_IE_list.aspx" />
+    <Content Include="brp63print_IE_old.aspx" />
     <Content Include="DocxTester.aspx" />
     <Content Include="packages.config" />
     <Content Include="ReportTemplate\00基本資料表.docx" />
@@ -75,6 +76,7 @@
     <Content Include="ReportTemplate\01發明專利申請書_img.docx" />
     <Content Include="ReportTemplate\FE9團體標章註冊申請書.docx" />
     <Content Include="ReportTemplate\[團體標章註冊申請書].docx" />
+    <Content Include="OutReport\發票明細表.xls" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -140,7 +142,6 @@
     <Compile Include="ExcelTester.aspx.designer.cs">
       <DependentUpon>ExcelTester.aspx</DependentUpon>
     </Compile>
-    <Compile Include="ReportTemplate\IE1.cs" />
     <Compile Include="WebServiceTester.asmx.cs">
       <DependentUpon>WebServiceTester.asmx</DependentUpon>
       <SubType>Component</SubType>
