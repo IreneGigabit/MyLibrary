@@ -17,7 +17,8 @@ using MyLibrary;
 /// <summary>
 /// Docx 操作類別(use OpenXml SDK)
 /// </summary>
-public class OpenXmlHelper {
+public class OpenXmlHelper
+{
 	protected WordprocessingDocument outDoc = null;
 	protected MemoryStream outMem = new MemoryStream();
 	protected Body outBody = null;
@@ -193,7 +194,7 @@ public class OpenXmlHelper {
 	/// 複製範本Block(指定文件)
 	/// </summary>
 	public void CopyBlock(string srcDocName, string blockName) {
-		foreach (var par in CopyBlockList(srcDocName,blockName)) {
+		foreach (var par in CopyBlockList(srcDocName, blockName)) {
 			outBody.Append(par.CloneNode(true));
 		}
 	}
@@ -203,7 +204,7 @@ public class OpenXmlHelper {
 	/// <summary>
 	/// 複製範本Block,回傳Dictionary
 	/// </summary>
-	public Dictionary<int,Paragraph> CopyBlockDict(string blockName) {
+	public Dictionary<int, Paragraph> CopyBlockDict(string blockName) {
 		return CopyBlockDict(defTplDocName, blockName);
 	}
 
@@ -215,7 +216,7 @@ public class OpenXmlHelper {
 			WordprocessingDocument srcDoc = tplDoc[srcDocName];
 			Dictionary<int, Paragraph> dictElement = new Dictionary<int, Paragraph>();
 
-			foreach (var x in CopyBlockList(srcDocName,blockName).Select((Entry, Index) => new { Entry, Index })) {
+			foreach (var x in CopyBlockList(srcDocName, blockName).Select((Entry, Index) => new { Entry, Index })) {
 				dictElement.Add(x.Index + 1, x.Entry);
 			}
 			return dictElement;
@@ -377,8 +378,8 @@ public class OpenXmlHelper {
 		var element =
 			 new Drawing(
 				 new DW.Inline(
-			//Size of image, unit = EMU(English Metric Unit)
-			//1 cm = 360000 EMUs
+					 //Size of image, unit = EMU(English Metric Unit)
+					 //1 cm = 360000 EMUs
 					 new DW.Extent() { Cx = img.GetWidthInEMU(), Cy = img.GetHeightInEMU() },
 					 new DW.EffectExtent()
 					 {
@@ -430,8 +431,10 @@ public class OpenXmlHelper {
 										 }),
 									 new A.PresetGeometry(
 										 new A.AdjustValueList()
-									 ) { Preset = A.ShapeTypeValues.Rectangle }))
-						 ) { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" })
+									 )
+									 { Preset = A.ShapeTypeValues.Rectangle }))
+						 )
+						 { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" })
 				 )
 				 {
 					 DistanceFromTop = (UInt32Value)0U,
@@ -444,4 +447,14 @@ public class OpenXmlHelper {
 		outDoc.MainDocumentPart.Document.Body.AppendChild(new Paragraph(new Run(element)));
 	}
 	#endregion
+
+	public void SetPageSize(decimal heightCM, decimal widthCM) {
+		//SectionProperties sections0 = outDoc.MainDocumentPart.Document.Body.Elements<SectionProperties>().FirstOrDefault();
+		SectionProperties sections0 = outDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().FirstOrDefault();
+		PageSize page = sections0.GetFirstChild<PageSize>();
+		//page.Width = 15000;
+		//page.Height = 11000;
+		page.Height = Convert.ToUInt32(Math.Round(heightCM * (decimal)566.9523, 0));
+		page.Width = Convert.ToUInt32(Math.Round(widthCM * (decimal)566.9523, 0));
+	}
 }

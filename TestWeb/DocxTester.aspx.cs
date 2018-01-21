@@ -74,7 +74,7 @@ namespace TestWeb {
 			ipoList.ReplaceBookmark("receipt_name", "英業達股份有限公司(代繳人：聖島國際專利商標聯合事務所)");
 
 			//附送書件
-			ipoList.CloneReplaceBlock("b_attach", "#seq#", "NP28758");
+			ipoList.CopyReplaceBlock("b_attach", "#seq#", "NP28758");
 			//具結
 			ipoList.CopyBlock("b_sign");
 

@@ -12,7 +12,7 @@ using System.IO;
 using MyLibrary;
 
 namespace TestConsole {
-	class WordXml_new {
+	class WordXml_old {
 		private static string CurrDir = System.Environment.CurrentDirectory;//Debug路徑
 		static DirectoryInfo dir = new DirectoryInfo(CurrDir);
 		static string BaseDir = dir.Parent.Parent.FullName;//專案路徑
@@ -175,7 +175,6 @@ namespace TestConsole {
 			}
 		}
 		#endregion
-
 
 		#region 合併word且修改
 		public static void mergeWordEdit() {
