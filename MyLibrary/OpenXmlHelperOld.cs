@@ -12,7 +12,6 @@ using A = DocumentFormat.OpenXml.Drawing;
 using DW = DocumentFormat.OpenXml.Drawing.Wordprocessing;
 using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
 using System.Drawing;
-using MyLibrary;
 
 /// <summary>
 /// Docx 操作類別(use OpenXml SDK)

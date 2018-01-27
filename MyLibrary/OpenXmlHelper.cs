@@ -12,10 +12,12 @@ using A = DocumentFormat.OpenXml.Drawing;
 using DW = DocumentFormat.OpenXml.Drawing.Wordprocessing;
 using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
 using System.Drawing;
-using MyLibrary;
 
 /// <summary>
 /// Docx 操作類別(use OpenXml SDK)
+/// TODO:
+/// SetPageSize尚需測試
+/// 表格操作
 /// </summary>
 public class OpenXmlHelper
 {
@@ -54,7 +56,7 @@ public class OpenXmlHelper
 	/// 建立空白檔案
 	/// </summary>
 	public void Create() {
-		MemoryStream outMem = new MemoryStream();
+		outMem = new MemoryStream();
 		outDoc = WordprocessingDocument.Create(outMem, WordprocessingDocumentType.Document);
 		MainDocumentPart mainPart = outDoc.AddMainDocumentPart();
 		mainPart.Document = new Document();
@@ -124,24 +126,6 @@ public class OpenXmlHelper
 			outMem.WriteTo(fileStream);
 		}
 		this.Dispose();
-	}
-	#endregion
-
-	#region 增加段落文字
-	/// <summary>
-	/// 增加段落文字
-	/// </summary>
-	public void AddParagraph(string text) {
-		outDoc.MainDocumentPart.Document.Body.AppendChild(new Paragraph(new Run(new Text(text))));
-	}
-	#endregion
-
-	#region 增加段落
-	/// <summary>
-	/// 增加段落
-	/// </summary>
-	public void AddParagraph(Paragraph par) {
-		outDoc.MainDocumentPart.Document.Body.Append(par.CloneNode(true));
 	}
 	#endregion
 
@@ -337,29 +321,6 @@ public class OpenXmlHelper
 		else
 			outBody.AppendChild(footerSections[index].Parent.CloneNode(true));//頁尾
 	}
-
-	//private void CopyPageFoot(WordprocessingDocument sourceDoc, int index,bool haveBreak) {
-	//	string refId0 = string.Format("foot_{0}", Guid.NewGuid().ToString().Substring(0, 8));
-	//
-	//	//IEnumerable<SectionProperties> sections0 = tplDoc.MainDocumentPart.Document.Body.Elements<SectionProperties>();
-	//	SectionProperties[] elementSections = sourceDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().ToArray();
-	//	SectionProperties bfoot0 = (SectionProperties)elementSections[index].CloneNode(true);
-	//	FooterReference bid0 = bfoot0.GetFirstChild<FooterReference>();
-	//	string srcRefId = bid0.Id;
-	//	bid0.Id = refId0;
-	//
-	//	FooterPart elementFoot = sourceDoc.MainDocumentPart.FooterParts
-	//	.Where(
-	//		element => sourceDoc.MainDocumentPart.GetIdOfPart(element) == srcRefId
-	//	).SingleOrDefault();
-	//
-	//	outDoc.MainDocumentPart.AddPart(elementFoot, refId0);
-	//
-	//	if (haveBreak)
-	//		outBody.AppendChild(new Paragraph(new ParagraphProperties(bfoot0)));//頁尾+分節符號
-	//	else
-	//		outBody.AppendChild(bfoot0);//頁尾
-	//}
 	#endregion
 
 	#region 插入圖片
@@ -445,6 +406,68 @@ public class OpenXmlHelper
 				 });
 
 		outDoc.MainDocumentPart.Document.Body.AppendChild(new Paragraph(new Run(element)));
+	}
+	#endregion
+
+	#region 增加段落
+	/// <summary>
+	/// 增加段落
+	/// </summary>
+	public void AddParagraph(Paragraph par) {
+		//outDoc.MainDocumentPart.Document.Body.Append(par.CloneNode(true));
+		outBody.Append(par.CloneNode(true));
+	}
+	#endregion
+
+	#region 增加段落
+	/// <summary>
+	/// 增加段落
+	/// </summary>
+	public OpenXmlHelper AddParagraph() {
+		outBody.Append(new Paragraph(new Run()));
+		return this;
+	}
+	#endregion
+
+	#region 增加文字
+	public OpenXmlHelper AddText(string text) {
+		Run LastRun = outDoc.MainDocumentPart.RootElement.Descendants<Run>().LastOrDefault();
+		if (LastRun == null) {
+			outBody.AppendChild(new Paragraph(new Run()));
+			LastRun = outDoc.MainDocumentPart.RootElement.Descendants<Run>().LastOrDefault();
+		}
+
+		string[] txtArr = text.Split('\n');
+		for (int i = 0; i < txtArr.Length; i++) {
+			if (i != 0) {
+				LastRun.Append(new Break());
+			}
+			LastRun.Append(new Text(txtArr[i]));
+		}
+		return this;
+	}
+	#endregion
+
+	#region 插入換行符號(Shift-Enter)
+	/// <summary>
+	/// 插入換行符號(Shift-Enter)
+	/// </summary>
+	public OpenXmlHelper NewLine() {
+		Run LastRun = outDoc.MainDocumentPart.RootElement.Descendants<Run>().LastOrDefault();
+		if (LastRun != null) {
+			LastRun.Append(new Break());
+		}
+		return this;
+	}
+	#endregion
+
+	#region 插入分頁符號(Ctrl-Enter)
+	/// <summary>
+	/// 插入分頁符號(Ctrl-Enter)
+	/// </summary>
+	public OpenXmlHelper NewPage() {
+		outBody.AppendChild(new Paragraph(new Run(new Break() { Type = BreakValues.Page })));//分頁符號
+		return this;
 	}
 	#endregion
 
