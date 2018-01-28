@@ -16,7 +16,7 @@ using System.Drawing;
 /// <summary>
 /// Docx 操作類別(use OpenXml SDK)
 /// TODO:
-/// SetPageSize尚需測試
+/// 紙張邊界
 /// 表格操作
 /// </summary>
 public class OpenXmlHelper
@@ -47,7 +47,7 @@ public class OpenXmlHelper
 			item.Value.Close();
 			item.Value.Dispose();
 		}
-		if (HttpContext.Current != null) HttpContext.Current.Response.End();
+		//if (HttpContext.Current != null) HttpContext.Current.Response.End();
 	}
 	#endregion
 
@@ -110,6 +110,7 @@ public class OpenXmlHelper
 		HttpContext.Current.Response.ContentType = "application/octet-stream";
 		HttpContext.Current.Response.AddHeader("Content-Length", outMem.Length.ToString());
 		HttpContext.Current.Response.BinaryWrite(outMem.ToArray());
+		HttpContext.Current.Response.End();
 		this.Dispose();
 	}
 	#endregion
@@ -471,13 +472,102 @@ public class OpenXmlHelper
 	}
 	#endregion
 
-	public void SetPageSize(decimal heightCM, decimal widthCM) {
+	#region 設定紙張大小
+	/// <summary>
+	/// 設定紙張大小
+	/// </summary>
+	/// <param name="widthCM">寬(公分)</param>
+	/// <param name="heightCM">高(公分)</param>
+	public OpenXmlHelper SetPageSize(double widthCM, double heightCM) {
 		//SectionProperties sections0 = outDoc.MainDocumentPart.Document.Body.Elements<SectionProperties>().FirstOrDefault();
-		SectionProperties sections0 = outDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().FirstOrDefault();
-		PageSize page = sections0.GetFirstChild<PageSize>();
-		//page.Width = 15000;
-		//page.Height = 11000;
-		page.Height = Convert.ToUInt32(Math.Round(heightCM * (decimal)566.9523, 0));
-		page.Width = Convert.ToUInt32(Math.Round(widthCM * (decimal)566.9523, 0));
+		//SectionProperties sections0 = outDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().FirstOrDefault();
+		//SectionProperties sectPr = outDoc.MainDocumentPart.Document.Descendants<SectionProperties>().FirstOrDefault();
+		if (outDoc.MainDocumentPart.Document.Descendants<SectionProperties>().FirstOrDefault() == null) {
+			outBody.Append(new SectionProperties());
+		}
+
+		var sections = outDoc.MainDocumentPart.Document.Descendants<SectionProperties>();
+		foreach (SectionProperties sectPr in sections) {
+			//PageSize pageSize = sections0.GetFirstChild<PageSize>();
+			PageSize pgSz = sectPr.Descendants<PageSize>().FirstOrDefault();
+			if (pgSz == null) {
+				//pageSize = new PageSize() { Width = (UInt32Value)11906U, Height = (UInt32Value)16838U };
+				//pageSize = new PageSize() { Width = 11906, Height = 16838, Orient = PageOrientationValues.Portrait };//21、29.7//直向
+				//pageSize = new PageSize() { Width = (UInt32Value)16838U, Height = (UInt32Value)11906U, Orient = PageOrientationValues.Landscape };
+				//pageSize = new PageSize() { Width = 16838, Height = 11906, Orient = PageOrientationValues.Landscape };//橫向
+				pgSz = new PageSize();
+				sectPr.Append(pgSz);
+			}
+			pgSz.Height = Convert.ToUInt32(Math.Round((decimal)heightCM * (decimal)566.9523, 0));
+			pgSz.Width = Convert.ToUInt32(Math.Round((decimal)widthCM * (decimal)566.9523, 0));
+		}
+
+		return this;
 	}
+	#endregion
+
+	#region 設為直向
+	/// <summary>
+	/// 設為直向
+	/// </summary>
+	public OpenXmlHelper SetPagePortrait() {
+		return SetPageOrientation(PageOrientationValues.Portrait);
+	}
+	#endregion
+
+	#region 設為橫向
+	/// <summary>
+	/// 設為橫向
+	/// </summary>
+	public OpenXmlHelper SetPageLandscape() {
+		return SetPageOrientation(PageOrientationValues.Landscape);
+	}
+	#endregion
+
+	#region 設定方向
+	/// <summary>
+	/// 設定方向,需先設定紙張大小,否則無作用
+	/// </summary>
+	protected OpenXmlHelper SetPageOrientation(PageOrientationValues newOrientation) {
+		var sections = outDoc.MainDocumentPart.Document.Descendants<SectionProperties>();
+		foreach (SectionProperties sectPr in sections) {
+			bool pageOrientationChanged = false;
+
+			PageSize pgSz = sectPr.Descendants<PageSize>().FirstOrDefault();
+			if (pgSz != null) {
+				if (pgSz.Orient == null) {
+					if (newOrientation != PageOrientationValues.Portrait) {
+						pgSz.Orient = new EnumValue<PageOrientationValues>(newOrientation);
+						pageOrientationChanged = true;
+					}
+				} else {
+					if (pgSz.Orient.Value != newOrientation) {
+						pgSz.Orient.Value = newOrientation;
+						pageOrientationChanged = true;
+					}
+				}
+				if (pageOrientationChanged) {
+					var width = pgSz.Width;
+					var height = pgSz.Height;
+					pgSz.Width = height;
+					pgSz.Height = width;
+
+					PageMargin pgMar = sectPr.Descendants<PageMargin>().FirstOrDefault();
+					if (pgMar != null) {
+						var top = pgMar.Top.Value;
+						var bottom = pgMar.Bottom.Value;
+						var left = pgMar.Left.Value;
+						var right = pgMar.Right.Value;
+
+						pgMar.Top = new Int32Value((int)left);
+						pgMar.Bottom = new Int32Value((int)right);
+						pgMar.Left = new UInt32Value((uint)Math.Max(0, bottom));
+						pgMar.Right = new UInt32Value((uint)Math.Max(0, top));
+					}
+				}
+			}
+		}
+		return this;
+	}
+	#endregion
 }
