@@ -59,8 +59,6 @@
     <Compile Include="FormHelper.cs" />
     <Compile Include="ImageFile.cs" />
     <Compile Include="LINQPadExtensions.cs" />
-    <Compile Include="OpenXmlHelper.cs" />
-    <Compile Include="OpenXmlHelperOld.cs" />
     <Compile Include="PdfPCellExt.cs" />
     <Compile Include="PdfPTableHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
