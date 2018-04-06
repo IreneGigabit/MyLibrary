@@ -16,6 +16,7 @@ namespace TestConsole
 			Console.ReadKey();
 		}
 
+		//基本切割
 		public static void method_1() {
 			string s = "abcdeabcdeabcde";
 			string[] sArray = s.Split('c');
@@ -29,6 +30,8 @@ namespace TestConsole
 			de
 			*/
 		}
+
+		//字串切割
 		public static void method_2() {
 			string s = "abcdeabcdeabcde";
 			string[] sArray1 = s.Split(new char[3] { 'c', 'd', 'e' });
@@ -37,16 +40,12 @@ namespace TestConsole
 			/*
 			輸出結果：
 			ab
-
-
 			ab
-
-
 			ab
-
-
 			*/
 		}
+
+		////字串切割(正規表示)
 		public static void method_3() {
 			string content = "agcyongfa365macyongfa365gggyongfa365ytx";
 			string[] resultString = Regex.Split(content, "yongfa365", RegexOptions.IgnoreCase);

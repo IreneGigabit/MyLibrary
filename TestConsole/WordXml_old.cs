@@ -30,10 +30,76 @@ namespace TestConsole {
 			//cloneStreamDoc();
 			//cloneStreamDocasFile();
 			//mergeWordEdit();
-			mergeWordNew();
-			Process.Start(outputFile);
+			//mergeWordNew();
+			TestTag();//測試書籤
+			//Process.Start(outputFile);
 			Console.ReadLine();
 		}
+
+		private static void TestTag() {
+			string templateFile = CurrDir + @"\yyyy.docx";
+			byte[] outArray = File.ReadAllBytes(templateFile);
+			MemoryStream outMem = new MemoryStream();
+			outMem.Write(outArray, 0, (int)outArray.Length);
+			WordprocessingDocument outDoc = WordprocessingDocument.Open(outMem, true);
+
+			string tagName = "yyyy";
+			string text = "aaa\nbbb";
+
+			MainDocumentPart mainPart = outDoc.MainDocumentPart;
+			BookmarkStart bookmarkStart = mainPart.RootElement.Descendants<BookmarkStart>().Where(i => i.Name.Value == tagName).FirstOrDefault();
+			if (bookmarkStart != null) {
+				Console.WriteLine("Find " + tagName + "!!");
+			} else {
+				Console.WriteLine("Not find " + tagName + "!!");
+			}
+
+			//foreach (BookmarkStart bookmarkStart in mainPart.RootElement.Descendants<BookmarkStart>()) {
+			//	if (bookmarkStart.Name.Value.ToLower() == bookmarkName.ToLower()) {
+			//		string id = bookmarkStart.Id.Value;
+			//
+			//
+			//		BookmarkEnd bookmarkEnd = bookmarkStart.Parent.Descendants<BookmarkEnd>().Where(i => i.Id.Value == id).FirstOrDefault();
+			//
+			//		//留第一個run其他run刪除,從BookmarkStart刪到BookmarkEnd為止
+			//		OpenXmlElement[] bookmarkItems = bookmarkStart.Parent.ChildElements.ToArray();
+			//		//HttpContext.Current.Response.Write(bookmarkItems.Count());
+			//		//HttpContext.Current.Response.End();
+			//
+			//		bool canRemove = false;
+			//		int bIndex = 0;
+			//		foreach (OpenXmlElement item in bookmarkItems) {
+			//			if (item.GetType() == typeof(BookmarkEnd) && bookmarkEnd != null && bookmarkEnd.Id == id) {
+			//				break;
+			//			}
+			//			if (canRemove && item.GetType() == typeof(Run)) {
+			//				if (bIndex == 0) {
+			//					string[] txtArr = text.Split('\n');
+			//					for (int i = 0; i < txtArr.Length; i++) {
+			//						if (i == 0) {
+			//							item.GetFirstChild<Text>().Text = txtArr[i];
+			//						} else {
+			//							item.Append(new Break());
+			//							item.Append(new Text(txtArr[i]));
+			//						}
+			//					}
+			//				} else {
+			//					item.Remove();
+			//				}
+			//				bIndex++;
+			//			}
+			//			//if (item.GetType() == typeof(BookmarkStart)) {
+			//			if (item.Equals(bookmarkStart)) {
+			//				canRemove = true;
+			//			}
+			//		}
+			//
+			//		bookmarkStart.Remove();
+			//		if (bookmarkEnd != null) bookmarkEnd.Remove();
+			//	}
+			//}
+		}
+
 
 		#region 合併word且修改
 		public static void mergeWordNew() {
