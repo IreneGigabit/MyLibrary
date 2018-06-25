@@ -33,71 +33,23 @@ namespace TestConsole {
 			//mergeWordNew();
 			TestTag();//測試書籤
 			//Process.Start(outputFile);
-			Console.ReadLine();
+			Console.WriteLine("請按任一鍵關閉..");
+			Console.ReadKey();
 		}
 
 		private static void TestTag() {
-			string templateFile = CurrDir + @"\yyyy.docx";
-			byte[] outArray = File.ReadAllBytes(templateFile);
-			MemoryStream outMem = new MemoryStream();
-			outMem.Write(outArray, 0, (int)outArray.Length);
-			WordprocessingDocument outDoc = WordprocessingDocument.Open(outMem, true);
+			OpenXmlHelper word = new OpenXmlHelper();
+			string templateFile = BaseDir + @"\yyyy.docx";
+			string outputFile = BaseDir + @"\new.docx";
 
-			string tagName = "yyyy";
-			string text = "aaa\nbbb";
+			Dictionary<string, string> tpl = new Dictionary<string, string>() { { "base", templateFile } };
+			word.CloneFromFile(tpl,true);
+			word.CopyBlock("b_attach");
+			//word.ReplaceBookmarkNew("doc_typenm");
 
-			MainDocumentPart mainPart = outDoc.MainDocumentPart;
-			BookmarkStart bookmarkStart = mainPart.RootElement.Descendants<BookmarkStart>().Where(i => i.Name.Value == tagName).FirstOrDefault();
-			if (bookmarkStart != null) {
-				Console.WriteLine("Find " + tagName + "!!");
-			} else {
-				Console.WriteLine("Not find " + tagName + "!!");
-			}
+			word.SaveTo(outputFile);
+			Process.Start(outputFile);
 
-			//foreach (BookmarkStart bookmarkStart in mainPart.RootElement.Descendants<BookmarkStart>()) {
-			//	if (bookmarkStart.Name.Value.ToLower() == bookmarkName.ToLower()) {
-			//		string id = bookmarkStart.Id.Value;
-			//
-			//
-			//		BookmarkEnd bookmarkEnd = bookmarkStart.Parent.Descendants<BookmarkEnd>().Where(i => i.Id.Value == id).FirstOrDefault();
-			//
-			//		//留第一個run其他run刪除,從BookmarkStart刪到BookmarkEnd為止
-			//		OpenXmlElement[] bookmarkItems = bookmarkStart.Parent.ChildElements.ToArray();
-			//		//HttpContext.Current.Response.Write(bookmarkItems.Count());
-			//		//HttpContext.Current.Response.End();
-			//
-			//		bool canRemove = false;
-			//		int bIndex = 0;
-			//		foreach (OpenXmlElement item in bookmarkItems) {
-			//			if (item.GetType() == typeof(BookmarkEnd) && bookmarkEnd != null && bookmarkEnd.Id == id) {
-			//				break;
-			//			}
-			//			if (canRemove && item.GetType() == typeof(Run)) {
-			//				if (bIndex == 0) {
-			//					string[] txtArr = text.Split('\n');
-			//					for (int i = 0; i < txtArr.Length; i++) {
-			//						if (i == 0) {
-			//							item.GetFirstChild<Text>().Text = txtArr[i];
-			//						} else {
-			//							item.Append(new Break());
-			//							item.Append(new Text(txtArr[i]));
-			//						}
-			//					}
-			//				} else {
-			//					item.Remove();
-			//				}
-			//				bIndex++;
-			//			}
-			//			//if (item.GetType() == typeof(BookmarkStart)) {
-			//			if (item.Equals(bookmarkStart)) {
-			//				canRemove = true;
-			//			}
-			//		}
-			//
-			//		bookmarkStart.Remove();
-			//		if (bookmarkEnd != null) bookmarkEnd.Remove();
-			//	}
-			//}
 		}
 
 

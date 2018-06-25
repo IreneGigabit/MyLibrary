@@ -48,6 +48,7 @@ public class OpenXmlHelper {
 		//微軟KB 312629https://support.microsoft.com/en-us/help/312629/prb-threadabortexception-occurs-if-you-use-response-end--response-redi
 		//Response.End、Server.Transfer、Response.Redirect被呼叫時，會觸發ThreadAbortException，因此要改用CompleteRequest()
 		//HttpContext.Current.Response.End();
+		if (HttpContext.Current != null)
 		HttpContext.Current.ApplicationInstance.CompleteRequest();
 	}
 	#endregion
@@ -87,11 +88,13 @@ public class OpenXmlHelper {
 
 		//清空輸出檔內容
 		if (cleanFlag) {
-			//outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SdtElement>();
-			//outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<Paragraph>();
-			//outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SectionProperties>();
-			outDoc.MainDocumentPart.Document.Body.RemoveAllChildren();
-		}
+            //outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SdtElement>();
+            //outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<Paragraph>();
+            //outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SectionProperties>();
+            //outDoc.MainDocumentPart.Document.Body.RemoveAllChildren();
+            List<OpenXmlElement> child = outDoc.MainDocumentPart.Document.Body.ChildElements.TakeWhile(d => d.GetType() != typeof(SectionProperties)).ToList();
+            child.ForEach(c => c.Remove());
+        }
 
 		outBody = outDoc.MainDocumentPart.Document.Body;
 	}
@@ -150,7 +153,7 @@ public class OpenXmlHelper {
 			.Where(
 				element => element.Val.Value.ToLower() == blockName.ToLower()
 			).SingleOrDefault();
-	
+
 			if (elementTag != null) {
 				SdtElement block = (SdtElement)elementTag.Parent.Parent;
 				SdtContentBlock blockCont = block.Descendants<SdtContentBlock>().FirstOrDefault();
@@ -159,6 +162,11 @@ public class OpenXmlHelper {
 					foreach (var item in childs) {
 						arrElement.Add(item.CloneNode(true));
 					}
+				}
+				OpenXmlElement blockNext = blockCont.NextSibling();
+				if (blockNext != null) {
+					Console.WriteLine(blockNext.OuterXml);
+					arrElement.Add(blockNext.CloneNode(true));
 				}
 			}
 			return arrElement;
@@ -418,6 +426,50 @@ public class OpenXmlHelper {
 		}
 	}
 	#endregion
+	public void ReplaceBookmarkNew(string bookmarkName) {
+		try {
+			MainDocumentPart mainPart = outDoc.MainDocumentPart;
+			//IEnumerable<BookmarkEnd> bookMarkEnds = mainPart.RootElement.Descendants<BookmarkEnd>();
+			foreach (BookmarkStart bookmarkStart in mainPart.RootElement.Descendants<BookmarkStart>()) {
+				if (bookmarkStart.Name.Value.ToLower() == bookmarkName.ToLower()) {
+					string id = bookmarkStart.Id.Value;
+
+					BookmarkEnd bookmarkEnd = bookmarkStart.Parent.Descendants<BookmarkEnd>().Where(i => i.Id.Value == id).FirstOrDefault();
+
+					//留第一個run其他run刪除,從BookmarkStart刪到BookmarkEnd為止
+					OpenXmlElement[] bookmarkItems = bookmarkStart.Parent.ChildElements.ToArray();
+					//HttpContext.Current.Response.Write(bookmarkItems.Count());
+					//HttpContext.Current.Response.End();
+
+					bool canRemove = false;
+					int bIndex = 0;
+					foreach (OpenXmlElement item in bookmarkItems) {
+						if (item.GetType() == typeof(BookmarkEnd) && bookmarkEnd != null && bookmarkEnd.Id == id) {
+							break;
+						}
+						if (canRemove && item.GetType() == typeof(Run)) {
+							if (bIndex == 0) {
+
+							} else {
+								item.Remove();
+							}
+							bIndex++;
+						}
+						//if (item.GetType() == typeof(BookmarkStart)) {
+						if (item.Equals(bookmarkStart)) {
+							canRemove = true;
+						}
+					}
+
+					bookmarkStart.Remove();
+					if (bookmarkEnd != null) bookmarkEnd.Remove();
+				}
+			}
+		}
+		catch (Exception ex) {
+			throw new Exception("取代書籤錯誤!!(" + bookmarkName + ")", ex);
+		}
+	}
 
 	#region 複製範本頁尾
 	/// <summary>
