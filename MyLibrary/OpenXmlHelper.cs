@@ -30,7 +30,7 @@ public class OpenXmlHelper {
 	public OpenXmlHelper() {
 	}
 
-	#region 關閉
+	#region 關閉 +void Dispose()
 	/// <summary>
 	/// 關閉
 	/// </summary>
@@ -48,12 +48,11 @@ public class OpenXmlHelper {
 		//微軟KB 312629https://support.microsoft.com/en-us/help/312629/prb-threadabortexception-occurs-if-you-use-response-end--response-redi
 		//Response.End、Server.Transfer、Response.Redirect被呼叫時，會觸發ThreadAbortException，因此要改用CompleteRequest()
 		//HttpContext.Current.Response.End();
-		if (HttpContext.Current != null)
-		HttpContext.Current.ApplicationInstance.CompleteRequest();
+        if (HttpContext.Current != null) HttpContext.Current.ApplicationInstance.CompleteRequest();
 	}
 	#endregion
 
-	#region 建立空白檔案
+	#region 建立空白檔案 +void Create()
 	/// <summary>
 	/// 建立空白檔案
 	/// </summary>
@@ -66,7 +65,7 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 複製範本檔
+	#region 複製範本檔 +void CloneFromFile(Dictionary<string, string> templateList, bool cleanFlag)
 	/// <summary>
 	/// 複製範本檔
 	/// </summary>
@@ -88,19 +87,19 @@ public class OpenXmlHelper {
 
 		//清空輸出檔內容
 		if (cleanFlag) {
-            //outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SdtElement>();
-            //outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<Paragraph>();
-            //outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SectionProperties>();
-            //outDoc.MainDocumentPart.Document.Body.RemoveAllChildren();
-            List<OpenXmlElement> child = outDoc.MainDocumentPart.Document.Body.ChildElements.TakeWhile(d => d.GetType() != typeof(SectionProperties)).ToList();
-            child.ForEach(c => c.Remove());
+			//outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SdtElement>();
+			//outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<Paragraph>();
+			//outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SectionProperties>();
+			outDoc.MainDocumentPart.Document.Body.RemoveAllChildren();
+            //List<OpenXmlElement> child = outDoc.MainDocumentPart.Document.Body.ChildElements.TakeWhile(d => d.GetType() != typeof(SectionProperties)).ToList();
+            //child.ForEach(c => c.Remove());
         }
 
 		outBody = outDoc.MainDocumentPart.Document.Body;
 	}
 	#endregion
 
-	#region 輸出檔案(memory)
+	#region 輸出檔案(memory) +void Flush(string outputName)
 	/// <summary>
 	/// 輸出檔案(memory)
 	/// </summary>
@@ -118,7 +117,7 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 另存檔案
+	#region 另存檔案 +void SaveTo(string outputPath)
 	/// <summary>
 	/// 另存檔案
 	/// </summary>
@@ -132,52 +131,59 @@ public class OpenXmlHelper {
 		this.Dispose();
 	}
 	#endregion
-	
-	#region 複製範本Block,回傳List
+
+	#region 複製範本Block,回傳List +List<OpenXmlElement> CopyBlockList(string blockName)
 	/// <summary>
 	/// 複製範本Block,回傳List
 	/// </summary>
 	public List<OpenXmlElement> CopyBlockList(string blockName) {
 		return CopyBlockList(defTplDocName, blockName);
 	}
+	#endregion
 
+	#region 複製範本Block,回傳List +List<OpenXmlElement> CopyBlockList(string srcDocName, string blockName)
 	/// <summary>
 	/// 複製範本Block,回傳List
 	/// </summary>
 	/// <param name="srcDocName">來源範本別名</param>
 	public List<OpenXmlElement> CopyBlockList(string srcDocName, string blockName) {
-		try {
-			WordprocessingDocument srcDoc = tplDoc[srcDocName]; 
-			List<OpenXmlElement> arrElement = new List<OpenXmlElement>();
-			Tag elementTag = srcDoc.MainDocumentPart.RootElement.Descendants<Tag>()
-			.Where(
-				element => element.Val.Value.ToLower() == blockName.ToLower()
-			).SingleOrDefault();
+        try {
+            WordprocessingDocument srcDoc = tplDoc[srcDocName];
+            List<OpenXmlElement> arrElement = new List<OpenXmlElement>();
+            Tag elementTag = srcDoc.MainDocumentPart.RootElement.Descendants<Tag>()
+            .Where(
+                element => element.Val.Value.ToLower() == blockName.ToLower()
+            ).SingleOrDefault();
 
-			if (elementTag != null) {
-				SdtElement block = (SdtElement)elementTag.Parent.Parent;
-				SdtContentBlock blockCont = block.Descendants<SdtContentBlock>().FirstOrDefault();
-				if (blockCont != null) {
-					IEnumerable<OpenXmlElement> childs = blockCont.ChildElements;
-					foreach (var item in childs) {
-						arrElement.Add(item.CloneNode(true));
-					}
-				}
-				OpenXmlElement blockNext = blockCont.NextSibling();
-				if (blockNext != null) {
-					Console.WriteLine(blockNext.OuterXml);
-					arrElement.Add(blockNext.CloneNode(true));
-				}
-			}
-			return arrElement;
-		}
-		catch (Exception ex) {
-			throw new Exception("複製範本Block!!(" + blockName + ")", ex);
-		}
+            if (elementTag != null) {
+                SdtElement block = (SdtElement)elementTag.Parent.Parent;
+                SdtContentBlock blockCont = block.Descendants<SdtContentBlock>().FirstOrDefault();
+                if (blockCont != null) {
+                    if (blockName == "b_item")
+                    {
+                        Console.WriteLine(blockCont.Count());
+                    }
+                    IEnumerable<OpenXmlElement> childs = blockCont.ChildElements;
+                    //IEnumerable<OpenXmlElement> childs = block.ChildElements.Where(i => i.GetType() == typeof(SdtContentBlock));//SdtEndCharProperties //SdtProperties
+                    //IEnumerable<OpenXmlElement> childs = (OpenXmlElement)block.Descendants<SdtContentBlock>();
+                    foreach (var item in childs) {
+                        if (blockName == "b_item")
+                        {
+                            Console.WriteLine(item.OuterXml);
+                        }
+                        arrElement.Add(item.CloneNode(true));
+                    }
+                }
+            }
+            return arrElement;
+        }
+        catch (Exception ex) {
+            throw new Exception("複製範本Block!!(" + blockName + ")", ex);
+        }
 	}
 	#endregion
-	
-	#region 複製範本Block
+
+	#region 複製範本Block +void CopyBlock(string blockName)
 	/// <summary>
 	/// 複製範本Block
 	/// </summary>
@@ -186,7 +192,9 @@ public class OpenXmlHelper {
 			outBody.Append(par.CloneNode(true));
 		}
 	}
+	#endregion
 
+	#region 複製範本Block +void CopyBlock(string srcDocName, string blockName)
 	/// <summary>
 	/// 複製範本Block(指定來源)
 	/// </summary>
@@ -198,14 +206,16 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 複製範本Block,回傳Dictionary
+	#region 複製範本Block,回傳Dictionary +Dictionary<int, OpenXmlElement> CopyBlockDict(string blockName)
 	/// <summary>
 	/// 複製範本Block,回傳Dictionary
 	/// </summary>
 	public Dictionary<int, OpenXmlElement> CopyBlockDict(string blockName) {
 		return CopyBlockDict(defTplDocName, blockName);
 	}
+	#endregion
 
+	#region 複製範本Block,回傳Dictionary +Dictionary<int, OpenXmlElement> CopyBlockDict(string srcDocName, string blockName)
 	/// <summary>
 	/// 複製範本Block,回傳Dictionary
 	/// </summary>
@@ -226,26 +236,35 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 複製範本Block,並取代文字後再貼上
+	#region 複製範本Block,並取代文字後再貼上 +void CopyReplaceBlock(string blockName, string searchStr, string newStr)
 	/// <summary>
 	/// 複製範本Block,並取代文字後再貼上
 	/// </summary>
 	public void CopyReplaceBlock(string blockName, string searchStr, string newStr) {
-		CopyReplaceBlock(blockName, new Dictionary<string, string>() { { searchStr, newStr } });
+		CopyReplaceBlock(defTplDocName, blockName, new Dictionary<string, string>() { { searchStr, newStr } });
 	}
+	#endregion
+
+	#region 複製範本Block,並取代文字後再貼上 +void CopyReplaceBlock(string srcDocName, string blockName, string searchStr, string newStr)
 	/// <summary>
 	/// 複製範本Block,並取代文字後再貼上(指定來源)
 	/// </summary>
 	/// <param name="srcDocName">來源範本別名</param>
 	public void CopyReplaceBlock(string srcDocName, string blockName, string searchStr, string newStr) {
 		CopyReplaceBlock(srcDocName, blockName, new Dictionary<string, string>() { { searchStr, newStr } });
-	}
+	} 
+	#endregion
+
+	#region 複製範本Block,並取代文字後再貼上 +void CopyReplaceBlock(string blockName, Dictionary<string, string> mappingDic)
 	/// <summary>
 	/// 複製範本Block,並取代文字後再貼上
 	/// </summary>
 	public void CopyReplaceBlock(string blockName, Dictionary<string, string> mappingDic) {
 		CopyReplaceBlock(defTplDocName, blockName, mappingDic);
-	}
+	} 
+	#endregion
+
+	#region 複製範本Block,並取代文字後再貼上 +void CopyReplaceBlock(string srcDocName, string blockName, Dictionary<string, string> mappingDic)
 	/// <summary>
 	/// 複製範本Block,並取代文字後再貼上(指定來源)
 	/// </summary>
@@ -278,7 +297,7 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 取代文字
+	#region 取代輸出檔文字 +void ReplaceText(string searchStr, string newStr)
 	/// <summary>
 	/// 取代輸出檔文字
 	/// </summary>
@@ -300,7 +319,7 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 取代書籤
+	#region 取代書籤 +void ReplaceBookmark(string bookmarkName, string text, string ptext)
 	/// <summary>
 	/// 取代書籤
 	/// </summary>
@@ -313,6 +332,9 @@ public class OpenXmlHelper {
 		else
 			ReplaceBookmark(bookmarkName, text, false, System.Drawing.Color.Empty);
 	}
+	#endregion
+
+	#region 取代書籤 +void ReplaceBookmark(string bookmarkName, string text, string ptext, System.Drawing.Color color)
 	/// <summary>
 	/// 取代書籤
 	/// </summary>
@@ -324,8 +346,11 @@ public class OpenXmlHelper {
 		if (text == "")
 			ReplaceBookmark(bookmarkName, ptext, false, color);
 		else
-			ReplaceBookmark(bookmarkName, text, false);
-	}
+			ReplaceBookmark(bookmarkName, text, false, System.Drawing.Color.Empty);
+	} 
+	#endregion
+
+	#region 取代書籤 +void ReplaceBookmark(string bookmarkName, string text)
 	/// <summary>
 	/// 取代書籤
 	/// </summary>
@@ -333,7 +358,10 @@ public class OpenXmlHelper {
 	/// <param name="text">取代的值</param>
 	public void ReplaceBookmark(string bookmarkName, string text) {
 		ReplaceBookmark(bookmarkName, text, false, System.Drawing.Color.Empty);
-	}
+	} 
+	#endregion
+
+	#region 取代書籤 +void ReplaceBookmark(string bookmarkName, string text, System.Drawing.Color color)
 	/// <summary>
 	/// 取代書籤
 	/// </summary>
@@ -342,8 +370,10 @@ public class OpenXmlHelper {
 	/// <param name="color">套用此顏色</param>
 	public void ReplaceBookmark(string bookmarkName, string text, System.Drawing.Color color) {
 		ReplaceBookmark(bookmarkName, text, false, color);
-	}
+	} 
+	#endregion
 
+	#region 取代書籤 +void ReplaceBookmark(string bookmarkName, string text, bool delFlag)
 	/// <summary>
 	/// 取代書籤
 	/// </summary>
@@ -353,6 +383,9 @@ public class OpenXmlHelper {
 	public void ReplaceBookmark(string bookmarkName, string text, bool delFlag) {
 		ReplaceBookmark(bookmarkName, text, delFlag, System.Drawing.Color.Empty);
 	}
+	#endregion
+
+	#region 取代書籤 +void ReplaceBookmark(string bookmarkName, string text, bool delFlag, System.Drawing.Color color)
 	/// <summary>
 	/// 取代書籤
 	/// </summary>
@@ -426,52 +459,8 @@ public class OpenXmlHelper {
 		}
 	}
 	#endregion
-	public void ReplaceBookmarkNew(string bookmarkName) {
-		try {
-			MainDocumentPart mainPart = outDoc.MainDocumentPart;
-			//IEnumerable<BookmarkEnd> bookMarkEnds = mainPart.RootElement.Descendants<BookmarkEnd>();
-			foreach (BookmarkStart bookmarkStart in mainPart.RootElement.Descendants<BookmarkStart>()) {
-				if (bookmarkStart.Name.Value.ToLower() == bookmarkName.ToLower()) {
-					string id = bookmarkStart.Id.Value;
 
-					BookmarkEnd bookmarkEnd = bookmarkStart.Parent.Descendants<BookmarkEnd>().Where(i => i.Id.Value == id).FirstOrDefault();
-
-					//留第一個run其他run刪除,從BookmarkStart刪到BookmarkEnd為止
-					OpenXmlElement[] bookmarkItems = bookmarkStart.Parent.ChildElements.ToArray();
-					//HttpContext.Current.Response.Write(bookmarkItems.Count());
-					//HttpContext.Current.Response.End();
-
-					bool canRemove = false;
-					int bIndex = 0;
-					foreach (OpenXmlElement item in bookmarkItems) {
-						if (item.GetType() == typeof(BookmarkEnd) && bookmarkEnd != null && bookmarkEnd.Id == id) {
-							break;
-						}
-						if (canRemove && item.GetType() == typeof(Run)) {
-							if (bIndex == 0) {
-
-							} else {
-								item.Remove();
-							}
-							bIndex++;
-						}
-						//if (item.GetType() == typeof(BookmarkStart)) {
-						if (item.Equals(bookmarkStart)) {
-							canRemove = true;
-						}
-					}
-
-					bookmarkStart.Remove();
-					if (bookmarkEnd != null) bookmarkEnd.Remove();
-				}
-			}
-		}
-		catch (Exception ex) {
-			throw new Exception("取代書籤錯誤!!(" + bookmarkName + ")", ex);
-		}
-	}
-
-	#region 複製範本頁尾
+	#region 複製範本頁尾 +void CopyPageFoot(string srcDocName, bool isNewChapter)
 	/// <summary>
 	/// 複製範本頁尾
 	/// </summary>
@@ -480,19 +469,18 @@ public class OpenXmlHelper {
 	public void CopyPageFoot(string srcDocName, bool isNewChapter) {
 		WordprocessingDocument sourceDoc = tplDoc[srcDocName];
 		int index = 0;//取消index參數,只抓第1個
+        FooterReference[] footer = sourceDoc.MainDocumentPart.RootElement.Descendants<FooterReference>().Where(x => x.Type == HeaderFooterValues.Default).ToArray();
+        string newRefId = string.Format("foot_{0}", Guid.NewGuid().ToString().Substring(0, 8));
+        if (srcDocName != defTplDocName) {
+            string srcRefId = footer[index].Id;
+            footer[index].Id = newRefId;
+            FooterPart elementFoot = sourceDoc.MainDocumentPart.FooterParts
+            .Where(
+                element => sourceDoc.MainDocumentPart.GetIdOfPart(element) == srcRefId
+            ).SingleOrDefault();
+            outDoc.MainDocumentPart.AddPart(elementFoot, newRefId);
 
-		FooterReference[] footer = sourceDoc.MainDocumentPart.RootElement.Descendants<FooterReference>().ToArray();
-		if (srcDocName != defTplDocName) {
-			string newRefId = string.Format("foot_{0}", Guid.NewGuid().ToString().Substring(0, 8));
-			string srcRefId = footer[index].Id;
-			footer[index].Id = newRefId;
-			FooterPart elementFoot = sourceDoc.MainDocumentPart.FooterParts
-			.Where(
-				element => sourceDoc.MainDocumentPart.GetIdOfPart(element) == srcRefId
-			).SingleOrDefault();
-		
-			outDoc.MainDocumentPart.AddPart(elementFoot, newRefId);
-
+            /*
 			FooterPart fp = outDoc.MainDocumentPart.FooterParts
 			.Where(
 				element => outDoc.MainDocumentPart.GetIdOfPart(element) == newRefId
@@ -511,18 +499,97 @@ public class OpenXmlHelper {
 
 			StylesPart outPart = outDoc.MainDocumentPart.StyleDefinitionsPart;
 			outPart.Styles.Append(st.CloneNode(true));
-		}
+             * */
+        }
+        /*
+        if (isNewChapter) {
+            //outBody.AppendChild(new Paragraph(new ParagraphProperties(footer[index].Parent.CloneNode(true))));//頁尾+分節符號
+            outBody.Append(new Paragraph(new ParagraphProperties(footer[index].Parent.CloneNode(true))));//頁尾+分節符號
+        } else {
+            SectionProperties sp = (SectionProperties)footer[index].Parent.CloneNode(true);
+            OpenXmlElement[] spItemsNode = sp.ChildElements.ToArray();
+            foreach (OpenXmlElement item in spItemsNode) {
+                if (item.GetType() == typeof(HeaderReference)) {
+                    item.Remove();
+                } else if (item.GetType() == typeof(FooterReference)) {
+                    if (((FooterReference)item).Id != newRefId)
+                        item.Remove();
+                }
+            }
+            outBody.AppendChild(sp);//頁尾
+        }
+        */
+        SectionProperties sp = (SectionProperties)footer[index].Parent.CloneNode(true);
+        OpenXmlElement[] spItemsNode = sp.ChildElements.ToArray();
+        foreach (OpenXmlElement item in spItemsNode) {
+            if (item.GetType() == typeof(HeaderReference)) {
+                item.Remove();
+            } else if (item.GetType() == typeof(FooterReference)) {
+                if (((FooterReference)item).Id != newRefId && srcDocName != defTplDocName)
+                    item.Remove();
+            }
+        }
 
-		if (isNewChapter) {
-			//outBody.AppendChild(new Paragraph(new ParagraphProperties(footer[index].Parent.CloneNode(true))));//頁尾+分節符號
-			outBody.Append(new Paragraph(new ParagraphProperties(footer[index].Parent.CloneNode(true))));//頁尾+分節符號
-		} else {
-			outBody.AppendChild(footer[index].Parent.CloneNode(true));//頁尾
-		}
+        if (isNewChapter) {
+            if (footer.Length > 0) {
+                //outBody.AppendChild(new Paragraph(new ParagraphProperties(footer[index].Parent.CloneNode(true))));//頁尾+分節符號
+                //outBody.Append(new Paragraph(new ParagraphProperties(footer[index].Parent.CloneNode(true))));//頁尾+分節符號
+                outBody.Append(new Paragraph(new ParagraphProperties(sp)));//頁尾+分節符號
+            } else {
+                outBody.Append(new Paragraph(new ParagraphProperties(sourceDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().FirstOrDefault().CloneNode(true))));//沒有頁尾則copy邊界設定
+            }
+        } else {
+            if (footer.Length > 0) {
+                outBody.AppendChild(sp);//頁尾
+            } else {
+                outBody.AppendChild(sourceDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().FirstOrDefault().CloneNode(true));//沒有頁尾則copy邊界設定
+            }
+        }
+
 	}
 	#endregion
-	
-	#region 增加段落
+
+    #region 複製範本頁首 +void CopyPageHeader(string srcDocName)
+    /// <summary>
+    /// 複製範本頁首
+    /// </summary>
+    /// <param name="srcDocName">來源範本別名</param>
+    public void CopyPageHeader(string srcDocName) {
+        WordprocessingDocument sourceDoc = tplDoc[srcDocName];
+        int index = 0;//取消index參數,只抓第1個
+        HeaderReference[] header = sourceDoc.MainDocumentPart.RootElement.Descendants<HeaderReference>().Where(x => x.Type == HeaderFooterValues.Default).ToArray();
+        string newRefId = string.Format("head_{0}", Guid.NewGuid().ToString().Substring(0, 8));
+        if (srcDocName != defTplDocName) {
+            string srcRefId = header[index].Id;
+            header[index].Id = newRefId;
+            HeaderPart elementHeader = sourceDoc.MainDocumentPart.HeaderParts
+            .Where(
+                element => sourceDoc.MainDocumentPart.GetIdOfPart(element) == srcRefId
+            ).SingleOrDefault();
+            outDoc.MainDocumentPart.AddPart(elementHeader, newRefId);
+        }
+        
+        SectionProperties sp = (SectionProperties)header[index].Parent.CloneNode(true);
+        OpenXmlElement[] spItemsNode = sp.ChildElements.ToArray();
+        foreach (OpenXmlElement item in spItemsNode) {
+            if (item.GetType() == typeof(FooterReference)) {
+                item.Remove();
+            } else if (item.GetType() == typeof(HeaderReference)) {
+                if (((HeaderReference)item).Id != newRefId && srcDocName != defTplDocName)
+                    item.Remove();
+            }
+        }
+        
+        if (header.Length > 0) {
+            outBody.AppendChild(sp);//頁尾
+        } else {
+            outBody.AppendChild(sourceDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().FirstOrDefault().CloneNode(true));//沒有頁尾則copy邊界設定
+        }
+        
+    }
+    #endregion
+
+	#region 增加段落 +OpenXmlHelper AddParagraph(Paragraph par)
 	/// <summary>
 	/// 增加段落
 	/// </summary>
@@ -533,7 +600,7 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 增加段落
+	#region 增加段落 +OpenXmlHelper AddParagraph()
 	/// <summary>
 	/// 增加段落
 	/// </summary>
@@ -556,13 +623,16 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 增加文字
+	#region 在文件最後的段落加上文字 +OpenXmlHelper AddText(string text)
 	/// <summary>
 	/// 在文件最後的段落加上文字
 	/// </summary>
 	public OpenXmlHelper AddText(string text) {
 		return AddText(text, System.Drawing.Color.Empty);
 	}
+	#endregion
+
+	#region 在文件最後的段落加上文字 +OpenXmlHelper AddText(string text, System.Drawing.Color color)
 	/// <summary>
 	/// 在文件最後的段落加上文字
 	/// </summary>
@@ -595,7 +665,7 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 插入換行符號(Shift-Enter)
+	#region 插入換行符號(Shift-Enter) +OpenXmlHelper NewLine()
 	/// <summary>
 	/// 插入換行符號(Shift-Enter)
 	/// </summary>
@@ -608,7 +678,7 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 插入分頁符號(Ctrl-Enter)
+	#region 插入分頁符號(Ctrl-Enter) +OpenXmlHelper NewPage()
 	/// <summary>
 	/// 插入分頁符號(Ctrl-Enter)
 	/// </summary>
@@ -618,7 +688,7 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 設定紙張大小
+	#region 設定紙張大小 +OpenXmlHelper SetPageSize(double widthCM, double heightCM)
 	/// <summary>
 	/// 設定紙張大小
 	/// </summary>
@@ -652,7 +722,7 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 設為直向
+	#region 設為直向 +OpenXmlHelper SetPagePortrait()
 	/// <summary>
 	/// 設為直向
 	/// </summary>
@@ -661,7 +731,7 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 設為橫向
+	#region 設為橫向 +OpenXmlHelper SetPageLandscape()
 	/// <summary>
 	/// 設為橫向
 	/// </summary>
@@ -670,9 +740,9 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 設定方向
+	#region 設定紙張方向 #OpenXmlHelper SetPageOrientation(PageOrientationValues newOrientation)
 	/// <summary>
-	/// 設定方向,需先設定紙張大小,否則無作用
+	/// 設定紙張方向,需先設定紙張大小,否則無作用
 	/// </summary>
 	/// <param name="newOrientation">Landscape:橫向;Portrait:直向</param>
 	protected OpenXmlHelper SetPageOrientation(PageOrientationValues newOrientation) {
@@ -718,14 +788,36 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 複製Table
-	/// <summary>
-	/// Table
-	/// </summary>
-	/// <param name="srcDocName">來源範本別名</param>
+	#region 複製表格 +void CopyTable(string blockName)
 	public void CopyTable(string blockName) {
 		CopyTable(defTplDocName, blockName);
-	}
+	} 
+	#endregion
+
+	#region 複製表格 +void CopyTable(string srcDocName, string blockName)
+    public void CopyTable(string srcDocName, string blockName)
+    {
+        try
+        {
+            WordprocessingDocument srcDoc = tplDoc[srcDocName];
+            List<OpenXmlElement> arrElement = new List<OpenXmlElement>();
+            Tag elementTag = srcDoc.MainDocumentPart.RootElement.Descendants<Tag>()
+            .Where(
+                element => element.Val.Value.ToLower() == blockName.ToLower()
+            ).SingleOrDefault();
+
+            if (elementTag != null)
+            {
+                tmpTable = elementTag.Ancestors<Table>().FirstOrDefault();
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("複製Table錯誤!!(" + blockName + ")", ex);
+        }
+    }
+
+    /*
 	public void CopyTable(string srcDocName, string blockName) {
 		try {
 			WordprocessingDocument srcDoc = tplDoc[srcDocName];
@@ -746,12 +838,46 @@ public class OpenXmlHelper {
 		catch (Exception ex) {
 			throw new Exception("複製Table錯誤!!(" + blockName + ")", ex);
 		}
-	}
+	}*/
+	#endregion
+
+    #region 複製表格 +void CopyTable(int index)
+    public void CopyTable(int index)
+    {
+        CopyTable(defTplDocName, index);
+    }
+    #endregion
+
+    #region 複製表格 +void CopyTable(string srcDocName, int index)
+    public void CopyTable(string srcDocName, int index)
+    {
+        try
+        {
+            WordprocessingDocument srcDoc = tplDoc[srcDocName];
+            List<Table> tblElement = srcDoc.MainDocumentPart.RootElement.Descendants<Table>().ToList();
+
+            if (tblElement != null)
+            {
+                //tmpTable = tblElement[index];
+                outBody.AppendChild(tblElement[index].CloneNode(true));
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("複製Table錯誤!!(" + index + ")", ex);
+        }
+    }
+    #endregion
+
+	#region 貼上表格 +void PastTable()
 	public void PastTable() {
 		if (tmpTable != null) {
 			outBody.AppendChild(tmpTable.CloneNode(true));
 		}
-	}
+	} 
+	#endregion
+
+	#region 表格增加一行 +void AddTableRow()
 	public void AddTableRow() {
 		if (tmpTable != null) {
 			TableRow row = (TableRow)tmpTable.Descendants<TableRow>().LastOrDefault().CloneNode(true);
@@ -763,7 +889,7 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 轉換顏色
+	#region 轉換顏色 +static string toHtmlHexColor(System.Drawing.Color color)
 	/// <summary>
 	/// Color轉換成html色碼
 	/// </summary>
@@ -772,7 +898,7 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-	#region 插入圖片
+	#region 插入圖片 +void AppendImage(ImageFile img)
 	/// <summary>
 	/// 插入圖片
 	/// </summary>
