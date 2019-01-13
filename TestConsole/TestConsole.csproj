@@ -33,7 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>TestConsole.WordXml_old</StartupObject>
+    <StartupObject>TestConsole.OpenXmlTester</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DocumentFormat.OpenXml, Version=2.8.1.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
@@ -55,6 +55,8 @@
   <ItemGroup>
     <Compile Include="DecodeTester.cs" />
     <Compile Include="EncodingTester.cs" />
+    <Compile Include="OpenXmlTester.cs" />
+    <Compile Include="PdfMetaData.cs" />
     <Compile Include="PdfPCellExtTester.cs" />
     <Compile Include="PdfPTableHelperTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -72,6 +74,8 @@
     <None Include="testDocument\FE9[團體標章註冊申請書].docx" />
     <None Include="testDocument\img-new.docx" />
     <None Include="testDocument\img.docx" />
+    <None Include="testDocument\LetterHead_logo.docx" />
+    <None Include="testDocument\LetterHead_logo_table.docx" />
     <None Include="testDocument\new.docx" />
     <None Include="testDocument\new.pdf" />
     <None Include="testDocument\NP28758-發明%28原版%29.docx" />
