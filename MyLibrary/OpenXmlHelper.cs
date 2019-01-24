@@ -46,7 +46,7 @@ public class OpenXmlHelper {
 		//微軟KB 312629https://support.microsoft.com/en-us/help/312629/prb-threadabortexception-occurs-if-you-use-response-end--response-redi
 		//Response.End、Server.Transfer、Response.Redirect被呼叫時，會觸發ThreadAbortException，因此要改用CompleteRequest()
 		//HttpContext.Current.Response.End();
-        if (HttpContext.Current != null) HttpContext.Current.ApplicationInstance.CompleteRequest();
+		if (HttpContext.Current != null) HttpContext.Current.ApplicationInstance.CompleteRequest();
 	}
 	#endregion
 
@@ -89,9 +89,9 @@ public class OpenXmlHelper {
 			//outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<Paragraph>();
 			//outDoc.MainDocumentPart.Document.Body.RemoveAllChildren<SectionProperties>();
 			outDoc.MainDocumentPart.Document.Body.RemoveAllChildren();
-            //List<OpenXmlElement> child = outDoc.MainDocumentPart.Document.Body.ChildElements.TakeWhile(d => d.GetType() != typeof(SectionProperties)).ToList();
-            //child.ForEach(c => c.Remove());
-        }
+			//List<OpenXmlElement> child = outDoc.MainDocumentPart.Document.Body.ChildElements.TakeWhile(d => d.GetType() != typeof(SectionProperties)).ToList();
+			//child.ForEach(c => c.Remove());
+		}
 
 		outBody = outDoc.MainDocumentPart.Document.Body;
 	}
@@ -145,31 +145,31 @@ public class OpenXmlHelper {
 	/// </summary>
 	/// <param name="srcDocName">來源範本別名</param>
 	public List<OpenXmlElement> CopyBlockList(string srcDocName, string blockName) {
-        try {
-            WordprocessingDocument srcDoc = tplDoc[srcDocName];
-            List<OpenXmlElement> arrElement = new List<OpenXmlElement>();
-            Tag elementTag = srcDoc.MainDocumentPart.RootElement.Descendants<Tag>()
-            .Where(
-                element => element.Val.Value.ToLower() == blockName.ToLower()
-            ).SingleOrDefault();
+		try {
+			WordprocessingDocument srcDoc = tplDoc[srcDocName];
+			List<OpenXmlElement> arrElement = new List<OpenXmlElement>();
+			Tag elementTag = srcDoc.MainDocumentPart.RootElement.Descendants<Tag>()
+			.Where(
+				element => element.Val.Value.ToLower() == blockName.ToLower()
+			).SingleOrDefault();
 
-            if (elementTag != null) {
-                SdtElement block = (SdtElement)elementTag.Parent.Parent;
-                SdtContentBlock blockCont = block.Descendants<SdtContentBlock>().FirstOrDefault();
-                if (blockCont != null) {
-                    IEnumerable<OpenXmlElement> childs = blockCont.ChildElements;
-                    //IEnumerable<OpenXmlElement> childs = block.ChildElements.Where(i => i.GetType() == typeof(SdtContentBlock));//SdtEndCharProperties //SdtProperties
-                    //IEnumerable<OpenXmlElement> childs = (OpenXmlElement)block.Descendants<SdtContentBlock>();
-                    foreach (var item in childs) {
-                        arrElement.Add(item.CloneNode(true));
-                    }
-                }
-            }
-            return arrElement;
-        }
-        catch (Exception ex) {
-            throw new Exception("複製範本Block!!(" + blockName + ")", ex);
-        }
+			if (elementTag != null) {
+				SdtElement block = (SdtElement)elementTag.Parent.Parent;
+				SdtContentBlock blockCont = block.Descendants<SdtContentBlock>().FirstOrDefault();
+				if (blockCont != null) {
+					IEnumerable<OpenXmlElement> childs = blockCont.ChildElements;
+					//IEnumerable<OpenXmlElement> childs = block.ChildElements.Where(i => i.GetType() == typeof(SdtContentBlock));//SdtEndCharProperties //SdtProperties
+					//IEnumerable<OpenXmlElement> childs = (OpenXmlElement)block.Descendants<SdtContentBlock>();
+					foreach (var item in childs) {
+						arrElement.Add(item.CloneNode(true));
+					}
+				}
+			}
+			return arrElement;
+		}
+		catch (Exception ex) {
+			throw new Exception("複製範本Block!!(" + blockName + ")", ex);
+		}
 	}
 	#endregion
 
@@ -242,7 +242,7 @@ public class OpenXmlHelper {
 	/// <param name="srcDocName">來源範本別名</param>
 	public void CopyReplaceBlock(string srcDocName, string blockName, string searchStr, string newStr) {
 		CopyReplaceBlock(srcDocName, blockName, new Dictionary<string, string>() { { searchStr, newStr } });
-	} 
+	}
 	#endregion
 
 	#region 複製範本Block,並取代文字後再貼上 +void CopyReplaceBlock(string blockName, Dictionary<string, string> mappingDic)
@@ -251,7 +251,7 @@ public class OpenXmlHelper {
 	/// </summary>
 	public void CopyReplaceBlock(string blockName, Dictionary<string, string> mappingDic) {
 		CopyReplaceBlock(defTplDocName, blockName, mappingDic);
-	} 
+	}
 	#endregion
 
 	#region 複製範本Block,並取代文字後再貼上 +void CopyReplaceBlock(string srcDocName, string blockName, Dictionary<string, string> mappingDic)
@@ -275,7 +275,7 @@ public class OpenXmlHelper {
 					if (parRun != null) {
 						parRun.RemoveAllChildren<Text>();
 						//parRun.Append(new Text(tmpInnerText));
-                        parRun.Append(new Text { Text = tmpInnerText, Space = SpaceProcessingModeValues.Preserve });
+						parRun.Append(new Text { Text = tmpInnerText, Space = SpaceProcessingModeValues.Preserve });
 						pars[i].Append(parRun.CloneNode(true));
 					}
 				}
@@ -303,7 +303,7 @@ public class OpenXmlHelper {
 				if (parRun != null) {
 					parRun.RemoveAllChildren<Text>();
 					parRun.Append(new Text(tmpInnerText));
-                    parRun.Append(new Text { Text = tmpInnerText, Space = SpaceProcessingModeValues.Preserve });
+					parRun.Append(new Text { Text = tmpInnerText, Space = SpaceProcessingModeValues.Preserve });
 					pars[i].Append(parRun.CloneNode(true));
 				}
 			}
@@ -339,7 +339,7 @@ public class OpenXmlHelper {
 			ReplaceBookmark(bookmarkName, ptext, false, color);
 		else
 			ReplaceBookmark(bookmarkName, text, false, System.Drawing.Color.Empty);
-	} 
+	}
 	#endregion
 
 	#region 取代書籤 +void ReplaceBookmark(string bookmarkName, string text)
@@ -350,7 +350,7 @@ public class OpenXmlHelper {
 	/// <param name="text">取代的值</param>
 	public void ReplaceBookmark(string bookmarkName, string text) {
 		ReplaceBookmark(bookmarkName, text, false, System.Drawing.Color.Empty);
-	} 
+	}
 	#endregion
 
 	#region 取代書籤 +void ReplaceBookmark(string bookmarkName, string text, System.Drawing.Color color)
@@ -362,7 +362,7 @@ public class OpenXmlHelper {
 	/// <param name="color">套用此顏色</param>
 	public void ReplaceBookmark(string bookmarkName, string text, System.Drawing.Color color) {
 		ReplaceBookmark(bookmarkName, text, false, color);
-	} 
+	}
 	#endregion
 
 	#region 取代書籤 +void ReplaceBookmark(string bookmarkName, string text, bool delFlag)
@@ -390,8 +390,8 @@ public class OpenXmlHelper {
 			MainDocumentPart mainPart = outDoc.MainDocumentPart;
 			//IEnumerable<BookmarkEnd> bookMarkEnds = mainPart.RootElement.Descendants<BookmarkEnd>();
 			BookmarkStart bookmarkStart = mainPart.RootElement.Descendants<BookmarkStart>().Where(i => i.Name.Value.ToLower() == bookmarkName.ToLower()).FirstOrDefault();
-			if(bookmarkStart != null) {
-			//foreach (BookmarkStart bookmarkStart in mainPart.RootElement.Descendants<BookmarkStart>()) {
+			if (bookmarkStart != null) {
+				//foreach (BookmarkStart bookmarkStart in mainPart.RootElement.Descendants<BookmarkStart>()) {
 				if (bookmarkStart.Name.Value.ToLower() == bookmarkName.ToLower()) {
 					string id = bookmarkStart.Id.Value;
 
@@ -401,69 +401,69 @@ public class OpenXmlHelper {
 					} else {
 						BookmarkEnd bookmarkEnd = bookmarkStart.Parent.Descendants<BookmarkEnd>().Where(i => i.Id.Value == id).FirstOrDefault();
 
-                        if (bookmarkStart.NextSibling() != null && bookmarkStart.NextSibling().GetType() == typeof(BookmarkEnd) && ((BookmarkEnd)bookmarkStart.NextSibling()).Id == id) {
-                            //Console.WriteLine(bookmarkName + "=11111");
-                            Run LastRun = bookmarkStart.PreviousSibling<Run>();
-                            if (LastRun == null) {
-                                LastRun = bookmarkStart.Ancestors<Paragraph>().FirstOrDefault().AppendChild(new Run());
-                                //LastRun.AppendChild(new RunProperties(new RunFonts() { Ascii = "Tahoma", HighAnsi = "Tahoma", ComplexScript = "Tahoma" }));
-                                RunFonts f = bookmarkStart.Ancestors<Paragraph>().FirstOrDefault().Descendants<RunFonts>().FirstOrDefault();
-                                LastRun.AppendChild(new RunProperties(f.CloneNode(true)));
-                            }
-                            string[] txtArr = text.Split('\n');
-                            for (int i = 0; i < txtArr.Length; i++) {
-                                if (i != 0) {
-                                    LastRun.Append(new Break());
-                                }
-                                //LastRun.Append(new Text(txtArr[i]));
-                                LastRun.Append(new Text { Text = txtArr[i], Space = SpaceProcessingModeValues.Preserve });
-                            }
-                            //bookmarkStart.InsertBeforeSelf(LastRun);
-                        } else {
-                            //Console.WriteLine(bookmarkName + "=22222");
-                            //留第一個run其他run刪除,從BookmarkStart刪到BookmarkEnd為止
-                            OpenXmlElement[] bookmarkItems = bookmarkStart.Parent.ChildElements.ToArray();
-                            //HttpContext.Current.Response.Write(bookmarkItems.Count());
-                            //HttpContext.Current.Response.End();
+						if (bookmarkStart.NextSibling() != null && bookmarkStart.NextSibling().GetType() == typeof(BookmarkEnd) && ((BookmarkEnd)bookmarkStart.NextSibling()).Id == id) {
+							//Console.WriteLine(bookmarkName + "=11111");
+							Run LastRun = bookmarkStart.PreviousSibling<Run>();
+							if (LastRun == null) {
+								LastRun = bookmarkStart.Ancestors<Paragraph>().FirstOrDefault().AppendChild(new Run());
+								//LastRun.AppendChild(new RunProperties(new RunFonts() { Ascii = "Tahoma", HighAnsi = "Tahoma", ComplexScript = "Tahoma" }));
+								RunFonts f = bookmarkStart.Ancestors<Paragraph>().FirstOrDefault().Descendants<RunFonts>().FirstOrDefault();
+								LastRun.AppendChild(new RunProperties(f.CloneNode(true)));
+							}
+							string[] txtArr = text.Split('\n');
+							for (int i = 0; i < txtArr.Length; i++) {
+								if (i != 0) {
+									LastRun.Append(new Break());
+								}
+								//LastRun.Append(new Text(txtArr[i]));
+								LastRun.Append(new Text { Text = txtArr[i], Space = SpaceProcessingModeValues.Preserve });
+							}
+							//bookmarkStart.InsertBeforeSelf(LastRun);
+						} else {
+							//Console.WriteLine(bookmarkName + "=22222");
+							//留第一個run其他run刪除,從BookmarkStart刪到BookmarkEnd為止
+							OpenXmlElement[] bookmarkItems = bookmarkStart.Parent.ChildElements.ToArray();
+							//HttpContext.Current.Response.Write(bookmarkItems.Count());
+							//HttpContext.Current.Response.End();
 
-                            bool canRemove = false;
-                            int bIndex = 0;
+							bool canRemove = false;
+							int bIndex = 0;
 
-                            foreach (OpenXmlElement item in bookmarkItems) {
-                                if (item.GetType() == typeof(BookmarkEnd) && bookmarkEnd != null && bookmarkEnd.Id == id) {
-                                    break;
-                                }
-                                if (canRemove && item.GetType() == typeof(Run)) {
-                                    if (bIndex == 0) {
-                                        string[] txtArr = text.Split('\n');
-                                        for (int i = 0; i < txtArr.Length; i++) {
-                                            if (i == 0) {
-                                                if (color != System.Drawing.Color.Empty) {
-                                                    RunProperties FirstRunProp = item.Descendants<RunProperties>().FirstOrDefault();
-                                                    if (FirstRunProp == null) {
-                                                        FirstRunProp = new RunProperties();
-                                                    }
-                                                    Color RunColor = new Color() { Val = toHtmlHexColor(color) };
-                                                    FirstRunProp.Append(RunColor);
-                                                }
-                                                item.GetFirstChild<Text>().Text = txtArr[i];
-                                            } else {
-                                                item.Append(new Break());
-                                                //item.Append(new Text(txtArr[i]));
-                                                item.Append(new Text { Text = txtArr[i], Space = SpaceProcessingModeValues.Preserve });
-                                            }
-                                        }
-                                    } else {
-                                        item.Remove();
-                                    }
-                                    bIndex++;
-                                }
-                                //if (item.GetType() == typeof(BookmarkStart)) {
-                                if (item.Equals(bookmarkStart)) {
-                                    canRemove = true;
-                                }
-                            }
-                        }
+							foreach (OpenXmlElement item in bookmarkItems) {
+								if (item.GetType() == typeof(BookmarkEnd) && bookmarkEnd != null && bookmarkEnd.Id == id) {
+									break;
+								}
+								if (canRemove && item.GetType() == typeof(Run)) {
+									if (bIndex == 0) {
+										string[] txtArr = text.Split('\n');
+										for (int i = 0; i < txtArr.Length; i++) {
+											if (i == 0) {
+												if (color != System.Drawing.Color.Empty) {
+													RunProperties FirstRunProp = item.Descendants<RunProperties>().FirstOrDefault();
+													if (FirstRunProp == null) {
+														FirstRunProp = new RunProperties();
+													}
+													Color RunColor = new Color() { Val = toHtmlHexColor(color) };
+													FirstRunProp.Append(RunColor);
+												}
+												item.GetFirstChild<Text>().Text = txtArr[i];
+											} else {
+												item.Append(new Break());
+												//item.Append(new Text(txtArr[i]));
+												item.Append(new Text { Text = txtArr[i], Space = SpaceProcessingModeValues.Preserve });
+											}
+										}
+									} else {
+										item.Remove();
+									}
+									bIndex++;
+								}
+								//if (item.GetType() == typeof(BookmarkStart)) {
+								if (item.Equals(bookmarkStart)) {
+									canRemove = true;
+								}
+							}
+						}
 
 						bookmarkStart.Remove();
 						if (bookmarkEnd != null) bookmarkEnd.Remove();
@@ -477,18 +477,18 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-    #region 複製範本頁尾 +void CopyPageFoot(string srcDocName, bool isNewChapter)
+	#region 複製範本頁尾 +void CopyPageFoot(string srcDocName, bool isNewChapter)
 	/// <summary>
 	/// 複製範本頁尾
 	/// </summary>
 	/// <param name="srcDocName">來源範本別名</param>
-    public void CopyPageFoot(string srcDocName) {
-        CopyPageFoot(srcDocName, false);
-    }
-    #endregion
+	public void CopyPageFoot(string srcDocName) {
+		CopyPageFoot(srcDocName, false);
+	}
+	#endregion
 
-    #region 複製範本頁尾 +void CopyPageFoot(string srcDocName, bool isNewChapter)
-    /// <summary>
+	#region 複製範本頁尾 +void CopyPageFoot(string srcDocName, bool isNewChapter)
+	/// <summary>
 	/// 複製範本頁尾
 	/// </summary>
 	/// <param name="srcDocName">來源範本別名</param>
@@ -496,18 +496,18 @@ public class OpenXmlHelper {
 	public void CopyPageFoot(string srcDocName, bool isNewChapter) {
 		WordprocessingDocument sourceDoc = tplDoc[srcDocName];
 		int index = 0;//取消index參數,只抓第1個
-        FooterReference[] footer = sourceDoc.MainDocumentPart.RootElement.Descendants<FooterReference>().Where(x => x.Type == HeaderFooterValues.Default).ToArray();
-        string newRefId = string.Format("foot_{0}", Guid.NewGuid().ToString().Substring(0, 8));
-        if (srcDocName != defTplDocName) {
-            string srcRefId = footer[index].Id;
-            footer[index].Id = newRefId;
-            FooterPart elementFoot = sourceDoc.MainDocumentPart.FooterParts
-            .Where(
-                element => sourceDoc.MainDocumentPart.GetIdOfPart(element) == srcRefId
-            ).SingleOrDefault();
-            outDoc.MainDocumentPart.AddPart(elementFoot, newRefId);
+		FooterReference[] footer = sourceDoc.MainDocumentPart.RootElement.Descendants<FooterReference>().Where(x => x.Type == HeaderFooterValues.Default).ToArray();
+		string newRefId = string.Format("foot_{0}", Guid.NewGuid().ToString().Substring(0, 8));
+		if (srcDocName != defTplDocName) {
+			string srcRefId = footer[index].Id;
+			footer[index].Id = newRefId;
+			FooterPart elementFoot = sourceDoc.MainDocumentPart.FooterParts
+			.Where(
+				element => sourceDoc.MainDocumentPart.GetIdOfPart(element) == srcRefId
+			).SingleOrDefault();
+			outDoc.MainDocumentPart.AddPart(elementFoot, newRefId);
 
-            /*
+			/*
 			FooterPart fp = outDoc.MainDocumentPart.FooterParts
 			.Where(
 				element => outDoc.MainDocumentPart.GetIdOfPart(element) == newRefId
@@ -527,8 +527,8 @@ public class OpenXmlHelper {
 			StylesPart outPart = outDoc.MainDocumentPart.StyleDefinitionsPart;
 			outPart.Styles.Append(st.CloneNode(true));
              * */
-        }
-        /*
+		}
+		/*
         if (isNewChapter) {
             //outBody.AppendChild(new Paragraph(new ParagraphProperties(footer[index].Parent.CloneNode(true))));//頁尾+分節符號
             outBody.Append(new Paragraph(new ParagraphProperties(footer[index].Parent.CloneNode(true))));//頁尾+分節符號
@@ -546,33 +546,33 @@ public class OpenXmlHelper {
             outBody.AppendChild(sp);//頁尾
         }
         */
-        if (footer.Length > 0) {
-            SectionProperties sp = (SectionProperties)footer[index].Parent.CloneNode(true);
-            OpenXmlElement[] spItemsNode = sp.ChildElements.ToArray();
-            foreach (OpenXmlElement item in spItemsNode) {
-                if (item.GetType() == typeof(HeaderReference)) {
-                    //item.Remove();
-                } else if (item.GetType() == typeof(FooterReference)) {
-                    if (((FooterReference)item).Id != newRefId && srcDocName != defTplDocName)
-                        item.Remove();
-                }
-            }
-            if (isNewChapter) {
-                //outBody.AppendChild(new Paragraph(new ParagraphProperties(footer[index].Parent.CloneNode(true))));//頁尾+分節符號
-                //outBody.Append(new Paragraph(new ParagraphProperties(footer[index].Parent.CloneNode(true))));//頁尾+分節符號
-                outBody.Append(new Paragraph(new ParagraphProperties(sp)));//頁尾+分節符號
-            } else {
-                outBody.AppendChild(sp);//頁尾
-            }
-        } else {
-            if (isNewChapter) {
-                outBody.Append(new Paragraph(new ParagraphProperties(sourceDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().FirstOrDefault().CloneNode(true))));//沒有頁尾則copy邊界設定
-            } else {
-                outBody.AppendChild(sourceDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().FirstOrDefault().CloneNode(true));//沒有頁尾則copy邊界設定
-            }
-        }
+		if (footer.Length > 0) {
+			SectionProperties sp = (SectionProperties)footer[index].Parent.CloneNode(true);
+			OpenXmlElement[] spItemsNode = sp.ChildElements.ToArray();
+			foreach (OpenXmlElement item in spItemsNode) {
+				if (item.GetType() == typeof(HeaderReference)) {
+					//item.Remove();
+				} else if (item.GetType() == typeof(FooterReference)) {
+					if (((FooterReference)item).Id != newRefId && srcDocName != defTplDocName)
+						item.Remove();
+				}
+			}
+			if (isNewChapter) {
+				//outBody.AppendChild(new Paragraph(new ParagraphProperties(footer[index].Parent.CloneNode(true))));//頁尾+分節符號
+				//outBody.Append(new Paragraph(new ParagraphProperties(footer[index].Parent.CloneNode(true))));//頁尾+分節符號
+				outBody.Append(new Paragraph(new ParagraphProperties(sp)));//頁尾+分節符號
+			} else {
+				outBody.AppendChild(sp);//頁尾
+			}
+		} else {
+			if (isNewChapter) {
+				outBody.Append(new Paragraph(new ParagraphProperties(sourceDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().FirstOrDefault().CloneNode(true))));//沒有頁尾則copy邊界設定
+			} else {
+				outBody.AppendChild(sourceDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().FirstOrDefault().CloneNode(true));//沒有頁尾則copy邊界設定
+			}
+		}
 
-        /*
+		/*
         if (isNewChapter) {
             if (footer.Length > 0) {
                 //outBody.AppendChild(new Paragraph(new ParagraphProperties(footer[index].Parent.CloneNode(true))));//頁尾+分節符號
@@ -592,45 +592,45 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-    #region 複製範本頁首 +void CopyPageHeader(string srcDocName)
-    /// <summary>
-    /// 複製範本頁首
-    /// </summary>
-    /// <param name="srcDocName">來源範本別名</param>
-    public void CopyPageHeader(string srcDocName) {
-        WordprocessingDocument sourceDoc = tplDoc[srcDocName];
-        int index = 0;//取消index參數,只抓第1個
-        HeaderReference[] header = sourceDoc.MainDocumentPart.RootElement.Descendants<HeaderReference>().Where(x => x.Type == HeaderFooterValues.Default).ToArray();
-        string newRefId = string.Format("head_{0}", Guid.NewGuid().ToString().Substring(0, 8));
-        if (srcDocName != defTplDocName) {
-            string srcRefId = header[index].Id;
-            header[index].Id = newRefId;
-            HeaderPart elementHeader = sourceDoc.MainDocumentPart.HeaderParts
-            .Where(
-                element => sourceDoc.MainDocumentPart.GetIdOfPart(element) == srcRefId
-            ).SingleOrDefault();
-            outDoc.MainDocumentPart.AddPart(elementHeader, newRefId);
-        }
-        
-        SectionProperties sp = (SectionProperties)header[index].Parent.CloneNode(true);
-        OpenXmlElement[] spItemsNode = sp.ChildElements.ToArray();
-        foreach (OpenXmlElement item in spItemsNode) {
-            if (item.GetType() == typeof(FooterReference)) {
-                //item.Remove();
-            } else if (item.GetType() == typeof(HeaderReference)) {
-                if (((HeaderReference)item).Id != newRefId && srcDocName != defTplDocName)
-                    item.Remove();
-            }
-        }
-        
-        if (header.Length > 0) {
-            outBody.AppendChild(sp);//頁尾
-        } else {
-            outBody.AppendChild(sourceDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().FirstOrDefault().CloneNode(true));//沒有頁尾則copy邊界設定
-        }
-        
-    }
-    #endregion
+	#region 複製範本頁首 +void CopyPageHeader(string srcDocName)
+	/// <summary>
+	/// 複製範本頁首
+	/// </summary>
+	/// <param name="srcDocName">來源範本別名</param>
+	public void CopyPageHeader(string srcDocName) {
+		WordprocessingDocument sourceDoc = tplDoc[srcDocName];
+		int index = 0;//取消index參數,只抓第1個
+		HeaderReference[] header = sourceDoc.MainDocumentPart.RootElement.Descendants<HeaderReference>().Where(x => x.Type == HeaderFooterValues.Default).ToArray();
+		string newRefId = string.Format("head_{0}", Guid.NewGuid().ToString().Substring(0, 8));
+		if (srcDocName != defTplDocName) {
+			string srcRefId = header[index].Id;
+			header[index].Id = newRefId;
+			HeaderPart elementHeader = sourceDoc.MainDocumentPart.HeaderParts
+			.Where(
+				element => sourceDoc.MainDocumentPart.GetIdOfPart(element) == srcRefId
+			).SingleOrDefault();
+			outDoc.MainDocumentPart.AddPart(elementHeader, newRefId);
+		}
+
+		SectionProperties sp = (SectionProperties)header[index].Parent.CloneNode(true);
+		OpenXmlElement[] spItemsNode = sp.ChildElements.ToArray();
+		foreach (OpenXmlElement item in spItemsNode) {
+			if (item.GetType() == typeof(FooterReference)) {
+				//item.Remove();
+			} else if (item.GetType() == typeof(HeaderReference)) {
+				if (((HeaderReference)item).Id != newRefId && srcDocName != defTplDocName)
+					item.Remove();
+			}
+		}
+
+		if (header.Length > 0) {
+			outBody.AppendChild(sp);//頁尾
+		} else {
+			outBody.AppendChild(sourceDoc.MainDocumentPart.RootElement.Descendants<SectionProperties>().FirstOrDefault().CloneNode(true));//沒有頁尾則copy邊界設定
+		}
+
+	}
+	#endregion
 
 	#region 增加段落 +OpenXmlHelper AddParagraph(Paragraph par)
 	/// <summary>
@@ -696,13 +696,13 @@ public class OpenXmlHelper {
 			LastRun.Append(LastRunProp.CloneNode(true));
 		}
 		string[] txtArr = text.Split('\n');
-        for (int i = 0; i < txtArr.Length; i++) {
-            if (i != 0) {
-                LastRun.Append(new Break());
-            }
-            //LastRun.Append(new Text(txtArr[i]));
-            LastRun.Append(new Text { Text = txtArr[i], Space = SpaceProcessingModeValues.Preserve });
-        }
+		for (int i = 0; i < txtArr.Length; i++) {
+			if (i != 0) {
+				LastRun.Append(new Break());
+			}
+			//LastRun.Append(new Text(txtArr[i]));
+			LastRun.Append(new Text { Text = txtArr[i], Space = SpaceProcessingModeValues.Preserve });
+		}
 		LastPar.Append(LastRun);
 
 		return this;
@@ -832,31 +832,26 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
-    #region 複製表格 +void CopyTable(int index)
-    public void CopyTable(int index)
-    {
-        CopyTable(defTplDocName, index);
-    }
-    #endregion
+	#region 複製表格 +void CopyTable(int index)
+	public void CopyTable(int index) {
+		CopyTable(defTplDocName, index);
+	}
+	#endregion
 
-    #region 複製表格 +void CopyTable(string srcDocName, int index)
-    public void CopyTable(string srcDocName, int index)
-    {
-        try
-        {
-            WordprocessingDocument srcDoc = tplDoc[srcDocName];
-            List<Table> tblElement = srcDoc.MainDocumentPart.RootElement.Descendants<Table>().ToList();
+	#region 複製表格 +void CopyTable(string srcDocName, int index)
+	public void CopyTable(string srcDocName, int index) {
+		try {
+			WordprocessingDocument srcDoc = tplDoc[srcDocName];
+			List<Table> tblElement = srcDoc.MainDocumentPart.RootElement.Descendants<Table>().ToList();
 
-            if (tblElement != null)
-            {
-                //tmpTable = tblElement[index];
-                outBody.AppendChild(tblElement[index].CloneNode(true));
-            }
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("複製Table錯誤!!(" + index + ")", ex);
-        }
+			if (tblElement != null) {
+				//tmpTable = tblElement[index];
+				outBody.AppendChild(tblElement[index].CloneNode(true));
+			}
+		}
+		catch (Exception ex) {
+			throw new Exception("複製Table錯誤!!(" + index + ")", ex);
+		}
 	}
 	#endregion
 
@@ -866,6 +861,23 @@ public class OpenXmlHelper {
 	/// </summary>
 	public static string toHtmlHexColor(System.Drawing.Color color) {
 		return String.Format("#{0:X2}{1:X2}{2:X2}", color.R, color.G, color.B);
+	}
+	#endregion
+
+	#region 刪除圖片 +void RemoveImage(string imgText)
+	/// <summary>
+	/// 刪除圖片
+	/// </summary>
+	/// <param name="imgText">圖片的替代文字</param>
+	public void RemoveImage(string imgText) {
+		MainDocumentPart mainPart = outDoc.MainDocumentPart;
+
+		DW.DocProperties picProp = mainPart.RootElement.Descendants<DW.DocProperties>().Where(i => i.Description == imgText).FirstOrDefault();
+		if (picProp != null) {
+			if (picProp.Parent.Parent.GetType() == typeof(Drawing)) {
+				picProp.Parent.Parent.Remove();
+			}
+		}
 	}
 	#endregion
 
@@ -955,6 +967,21 @@ public class OpenXmlHelper {
 	}
 	#endregion
 
+}
+
+public class Source
+{
+	public string FileName { get; set; }
+	public string Alias { get; set; }
+	public bool BreakFlag { get; set; }
+
+	public Source(string fileName, bool breakFlag) : this(fileName, "", breakFlag) { }
+
+	public Source(string fileName, string alias, bool breakFlag) {
+		FileName = fileName;
+		Alias = alias;
+		BreakFlag = breakFlag;
+	}
 }
 
 #region ImageFile

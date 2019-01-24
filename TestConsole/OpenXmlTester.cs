@@ -5,6 +5,7 @@ using System.IO;
 using System.Diagnostics;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using DocumentFormat.OpenXml.Drawing.Wordprocessing;
 
 namespace TestConsole
 {
@@ -18,12 +19,14 @@ namespace TestConsole
 			//TestTag();//測試書籤
 			//TestTable();//測試表格書籤
 			//TestIpo();//測試申請書
-			TestMerge();//測試檔案合併
+			//TestMerge();//測試檔案合併
+			TestDelImage();//測試刪除圖片
 			Console.WriteLine("請按任一鍵關閉..");
             Console.ReadKey();
         }
 
-        private static void TestTag() {
+		#region -void TestTag 測試書籤
+		private static void TestTag() {
             OpenXmlHelper word = new OpenXmlHelper();
             string templateFile = BaseDir + @"\testDocument\LetterHead_logo.docx";
             string outputFile = BaseDir + @"\OutReport\LetterHead_logo-NT66824.docx";
@@ -53,7 +56,9 @@ namespace TestConsole
             Process.Start(outputFile);
 
         }
+		#endregion
 
+		#region -void TestTable 測試表格書籤
 		private static void TestTable() {
 			OpenXmlHelper word = new OpenXmlHelper();
 			string templateFile = BaseDir + @"\testDocument\LetterHead_logo_table.docx";
@@ -90,7 +95,9 @@ namespace TestConsole
 			Process.Start(outputFile);
 
 		}
+		#endregion
 
+		#region -void TestIpo 測試申請書
 		private static void TestIpo() {
 			OpenXmlHelper word = new OpenXmlHelper();
 			string outputFile = BaseDir + @"\OutReport\LetterHead_logo-NT66824.docx";
@@ -197,8 +204,20 @@ namespace TestConsole
 			Process.Start(outputFile);
 
 		}
+		#endregion
 
+		#region -void TestMerge 測試檔案合併
 		private static void TestMerge() {
+			string templateFile = BaseDir + @"\testDocument\Blank3.docx";
+			List<Source> sources = new List<Source>()
+			{
+				new Source(BaseDir + @"\OutReport\MergeNew.docx", true),
+				new Source(BaseDir + @"\OutReport\MergeNew.docx", false),
+			};
+			OpenXmlHelper.MergeDoc(templateFile, sources);
+		}
+
+		private static void TestMerge1() {
 			string templateFile = BaseDir + @"\testDocument\Blank3.docx";
 			string outputFile = BaseDir + @"\OutReport\MergeNew.docx";
 
@@ -224,6 +243,7 @@ namespace TestConsole
 				}
 				File.WriteAllBytes(outputFile, stream.ToArray());
 			}
+			Process.Start(outputFile);
 			/*
 			using (WordprocessingDocument myDoc = WordprocessingDocument.Open(templateFile, false)) {
 				string altChunkId = "AltChunkId" + DateTime.Now.Ticks.ToString().Substring(0, 2);
@@ -241,7 +261,26 @@ namespace TestConsole
 				mainPart.Document.Body.InsertAfter(altChunk, mainPart.Document.Body.Elements<Paragraph>().Last());
 				mainPart.Document.Save();
 			}*/
+		}
+		#endregion
+
+		#region -void TestDelImage 測試刪除圖片
+		private static void TestDelImage() {
+			string outputFile = BaseDir + @"\OutReport\DelImage.docx";
+
+			OpenXmlHelper word = new OpenXmlHelper();
+			Dictionary<string, string> tpl = new Dictionary<string, string>();
+			tpl.Add("apply", BaseDir + @"\testDocument\ext電文定稿中文版_替代文字.docx");
+			word.CloneFromFile(tpl, true);
+
+			word.CopyBlock("b_all");
+			word.RemoveImage("簽名檔");
+
+			word.CopyPageFoot("apply");
+
+			word.SaveTo(outputFile);
 			Process.Start(outputFile);
 		}
+		#endregion
 	}
 }
