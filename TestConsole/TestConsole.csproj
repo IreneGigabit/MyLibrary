@@ -69,6 +69,7 @@
     <None Include="packages.config" />
     <None Include="testDocument\00基本資料表.docx" />
     <None Include="testDocument\01發明專利申請書.docx" />
+    <None Include="testDocument\Blank3.docx" />
     <None Include="testDocument\Credit_letter_apply_one - 複製.pdf" />
     <None Include="testDocument\Credit_letter_apply_one.pdf" />
     <None Include="testDocument\FE9[團體標章註冊申請書].docx" />

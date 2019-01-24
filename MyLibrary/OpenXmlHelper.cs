@@ -274,7 +274,8 @@ public class OpenXmlHelper {
 					pars[i].RemoveAllChildren<Run>();
 					if (parRun != null) {
 						parRun.RemoveAllChildren<Text>();
-						parRun.Append(new Text(tmpInnerText));
+						//parRun.Append(new Text(tmpInnerText));
+                        parRun.Append(new Text { Text = tmpInnerText, Space = SpaceProcessingModeValues.Preserve });
 						pars[i].Append(parRun.CloneNode(true));
 					}
 				}
@@ -302,6 +303,7 @@ public class OpenXmlHelper {
 				if (parRun != null) {
 					parRun.RemoveAllChildren<Text>();
 					parRun.Append(new Text(tmpInnerText));
+                    parRun.Append(new Text { Text = tmpInnerText, Space = SpaceProcessingModeValues.Preserve });
 					pars[i].Append(parRun.CloneNode(true));
 				}
 			}
@@ -399,61 +401,69 @@ public class OpenXmlHelper {
 					} else {
 						BookmarkEnd bookmarkEnd = bookmarkStart.Parent.Descendants<BookmarkEnd>().Where(i => i.Id.Value == id).FirstOrDefault();
 
-						if (bookmarkStart.NextSibling() != null && bookmarkStart.NextSibling().GetType() == typeof(BookmarkEnd) && ((BookmarkEnd)bookmarkStart.NextSibling()).Id == id) {
-							//Console.WriteLine(bookmarkName + "=11111");
-							Run LastRun = new Run();
-							string[] txtArr = text.Split('\n');
-							for (int i = 0; i < txtArr.Length; i++) {
-								if (i != 0) {
-									LastRun.Append(new Break());
-								}
-								LastRun.Append(new Text(txtArr[i]));
-							}
-							bookmarkStart.InsertBeforeSelf(LastRun);
-						} else {
-							//Console.WriteLine(bookmarkName + "=22222");
-							//留第一個run其他run刪除,從BookmarkStart刪到BookmarkEnd為止
-							OpenXmlElement[] bookmarkItems = bookmarkStart.Parent.ChildElements.ToArray();
-							//HttpContext.Current.Response.Write(bookmarkItems.Count());
-							//HttpContext.Current.Response.End();
+                        if (bookmarkStart.NextSibling() != null && bookmarkStart.NextSibling().GetType() == typeof(BookmarkEnd) && ((BookmarkEnd)bookmarkStart.NextSibling()).Id == id) {
+                            //Console.WriteLine(bookmarkName + "=11111");
+                            Run LastRun = bookmarkStart.PreviousSibling<Run>();
+                            if (LastRun == null) {
+                                LastRun = bookmarkStart.Ancestors<Paragraph>().FirstOrDefault().AppendChild(new Run());
+                                //LastRun.AppendChild(new RunProperties(new RunFonts() { Ascii = "Tahoma", HighAnsi = "Tahoma", ComplexScript = "Tahoma" }));
+                                RunFonts f = bookmarkStart.Ancestors<Paragraph>().FirstOrDefault().Descendants<RunFonts>().FirstOrDefault();
+                                LastRun.AppendChild(new RunProperties(f.CloneNode(true)));
+                            }
+                            string[] txtArr = text.Split('\n');
+                            for (int i = 0; i < txtArr.Length; i++) {
+                                if (i != 0) {
+                                    LastRun.Append(new Break());
+                                }
+                                //LastRun.Append(new Text(txtArr[i]));
+                                LastRun.Append(new Text { Text = txtArr[i], Space = SpaceProcessingModeValues.Preserve });
+                            }
+                            //bookmarkStart.InsertBeforeSelf(LastRun);
+                        } else {
+                            //Console.WriteLine(bookmarkName + "=22222");
+                            //留第一個run其他run刪除,從BookmarkStart刪到BookmarkEnd為止
+                            OpenXmlElement[] bookmarkItems = bookmarkStart.Parent.ChildElements.ToArray();
+                            //HttpContext.Current.Response.Write(bookmarkItems.Count());
+                            //HttpContext.Current.Response.End();
 
-							bool canRemove = false;
-							int bIndex = 0;
+                            bool canRemove = false;
+                            int bIndex = 0;
 
-							foreach (OpenXmlElement item in bookmarkItems) {
-								if (item.GetType() == typeof(BookmarkEnd) && bookmarkEnd != null && bookmarkEnd.Id == id) {
-									break;
-								}
-								if (canRemove && item.GetType() == typeof(Run)) {
-									if (bIndex == 0) {
-										string[] txtArr = text.Split('\n');
-										for (int i = 0; i < txtArr.Length; i++) {
-											if (i == 0) {
-												if (color != System.Drawing.Color.Empty) {
-													RunProperties FirstRunProp = item.Descendants<RunProperties>().FirstOrDefault();
-													if (FirstRunProp == null) {
-														FirstRunProp = new RunProperties();
-													}
-													Color RunColor = new Color() { Val = toHtmlHexColor(color) };
-													FirstRunProp.Append(RunColor);
-												}
-												item.GetFirstChild<Text>().Text = txtArr[i];
-											} else {
-												item.Append(new Break());
-												item.Append(new Text(txtArr[i]));
-											}
-										}
-									} else {
-										item.Remove();
-									}
-									bIndex++;
-								}
-								//if (item.GetType() == typeof(BookmarkStart)) {
-								if (item.Equals(bookmarkStart)) {
-									canRemove = true;
-								}
-							}
-						}
+                            foreach (OpenXmlElement item in bookmarkItems) {
+                                if (item.GetType() == typeof(BookmarkEnd) && bookmarkEnd != null && bookmarkEnd.Id == id) {
+                                    break;
+                                }
+                                if (canRemove && item.GetType() == typeof(Run)) {
+                                    if (bIndex == 0) {
+                                        string[] txtArr = text.Split('\n');
+                                        for (int i = 0; i < txtArr.Length; i++) {
+                                            if (i == 0) {
+                                                if (color != System.Drawing.Color.Empty) {
+                                                    RunProperties FirstRunProp = item.Descendants<RunProperties>().FirstOrDefault();
+                                                    if (FirstRunProp == null) {
+                                                        FirstRunProp = new RunProperties();
+                                                    }
+                                                    Color RunColor = new Color() { Val = toHtmlHexColor(color) };
+                                                    FirstRunProp.Append(RunColor);
+                                                }
+                                                item.GetFirstChild<Text>().Text = txtArr[i];
+                                            } else {
+                                                item.Append(new Break());
+                                                //item.Append(new Text(txtArr[i]));
+                                                item.Append(new Text { Text = txtArr[i], Space = SpaceProcessingModeValues.Preserve });
+                                            }
+                                        }
+                                    } else {
+                                        item.Remove();
+                                    }
+                                    bIndex++;
+                                }
+                                //if (item.GetType() == typeof(BookmarkStart)) {
+                                if (item.Equals(bookmarkStart)) {
+                                    canRemove = true;
+                                }
+                            }
+                        }
 
 						bookmarkStart.Remove();
 						if (bookmarkEnd != null) bookmarkEnd.Remove();
@@ -686,12 +696,13 @@ public class OpenXmlHelper {
 			LastRun.Append(LastRunProp.CloneNode(true));
 		}
 		string[] txtArr = text.Split('\n');
-		for (int i = 0; i < txtArr.Length; i++) {
-			if (i != 0) {
-				LastRun.Append(new Break());
-			}
-			LastRun.Append(new Text(txtArr[i]));
-		}
+        for (int i = 0; i < txtArr.Length; i++) {
+            if (i != 0) {
+                LastRun.Append(new Break());
+            }
+            //LastRun.Append(new Text(txtArr[i]));
+            LastRun.Append(new Text { Text = txtArr[i], Space = SpaceProcessingModeValues.Preserve });
+        }
 		LastPar.Append(LastRun);
 
 		return this;

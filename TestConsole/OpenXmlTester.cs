@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.IO;
 using System.Diagnostics;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace TestConsole
 {
@@ -16,7 +17,8 @@ namespace TestConsole
         static void Main(string[] args) {
 			//TestTag();//測試書籤
 			//TestTable();//測試表格書籤
-			TestIpo();//測試申請書
+			//TestIpo();//測試申請書
+			TestMerge();//測試檔案合併
 			Console.WriteLine("請按任一鍵關閉..");
             Console.ReadKey();
         }
@@ -196,5 +198,50 @@ namespace TestConsole
 
 		}
 
+		private static void TestMerge() {
+			string templateFile = BaseDir + @"\testDocument\Blank3.docx";
+			string outputFile = BaseDir + @"\OutReport\MergeNew.docx";
+
+			byte[] byteArray = File.ReadAllBytes(templateFile);
+			using (MemoryStream stream = new MemoryStream()) {
+				stream.Write(byteArray, 0, (int)byteArray.Length);
+				using (WordprocessingDocument myDoc = WordprocessingDocument.Open(stream, true)) {
+					//string altChunkId = "AltChunkId" + DateTime.Now.Ticks.ToString().Substring(0, 2);
+					MainDocumentPart mainPart = myDoc.MainDocumentPart;
+
+					AlternativeFormatImportPart chunk = mainPart.AddAlternativeFormatImportPart(AlternativeFormatImportPartType.WordprocessingML);
+					string altChunkId = mainPart.GetIdOfPart(chunk);
+
+					using (FileStream fileStream = new FileStream(BaseDir + @"\testDocument\img.docx", FileMode.Open)) {
+						chunk.FeedData(fileStream);
+					}
+
+					AltChunk altChunk = new AltChunk();
+					altChunk.Id = altChunkId;
+
+					mainPart.Document.Body.InsertAfter(altChunk, mainPart.Document.Body.Elements<Paragraph>().Last());
+					mainPart.Document.Save();
+				}
+				File.WriteAllBytes(outputFile, stream.ToArray());
+			}
+			/*
+			using (WordprocessingDocument myDoc = WordprocessingDocument.Open(templateFile, false)) {
+				string altChunkId = "AltChunkId" + DateTime.Now.Ticks.ToString().Substring(0, 2);
+				MainDocumentPart mainPart = myDoc.MainDocumentPart;
+
+				AlternativeFormatImportPart chunk = mainPart.AddAlternativeFormatImportPart(AlternativeFormatImportPartType.WordprocessingML, altChunkId);
+
+				using (FileStream fileStream = new FileStream(BaseDir + @"\testDocument\img.docx", FileMode.Open)) {
+					chunk.FeedData(fileStream);
+				}
+
+				AltChunk altChunk = new AltChunk();
+				altChunk.Id = altChunkId;
+
+				mainPart.Document.Body.InsertAfter(altChunk, mainPart.Document.Body.Elements<Paragraph>().Last());
+				mainPart.Document.Save();
+			}*/
+			Process.Start(outputFile);
+		}
 	}
 }
