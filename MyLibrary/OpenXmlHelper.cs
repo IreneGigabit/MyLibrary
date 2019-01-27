@@ -10,6 +10,8 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using A = DocumentFormat.OpenXml.Drawing;
 using DW = DocumentFormat.OpenXml.Drawing.Wordprocessing;
 using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
+using Word = Microsoft.Office.Interop.Word;
+
 //using System.Drawing;
 
 /// <summary>
@@ -17,7 +19,8 @@ using PIC = DocumentFormat.OpenXml.Drawing.Pictures;
 /// TODO:
 /// 紙張邊界
 /// </summary>
-public class OpenXmlHelper {
+public class OpenXmlHelper
+{
 	protected WordprocessingDocument outDoc = null;
 	protected MemoryStream outMem = new MemoryStream();
 	protected Body outBody = null;
@@ -94,6 +97,117 @@ public class OpenXmlHelper {
 		}
 
 		outBody = outDoc.MainDocumentPart.Document.Body;
+	}
+	#endregion
+
+	#region 將指定檔案轉為pdf +static void ToPdf(string sourceFile, string outputFile)
+	/// <summary>
+	/// 將指定檔案轉為pdf
+	/// </summary>
+	/// <param name="sourceFile">來源檔</param>
+	/// <param name="outputFile">目的檔</param>
+	public static void ConvertToPDF(string sourceFile, string outputFile) {
+		object srcFile = sourceFile;
+		object destFile = outputFile;
+
+		//word用的常數值==
+		object wdFormatPDF = Word.WdSaveFormat.wdFormatPDF;
+		object oFalse = false;
+		object oTrue = true;
+		object oMissing = System.Reflection.Missing.Value;
+		//===============
+
+		Word._Application wordApp = new Word.Application();
+
+		Word._Document myDoc = wordApp.Documents.Open(ref srcFile, ref oMissing, ref oTrue, ref oMissing,
+							ref oMissing, ref oMissing, ref oMissing, ref oMissing,
+							ref oMissing, ref oMissing, ref oMissing, ref oFalse,
+							ref oMissing, ref oMissing, ref oMissing, ref oMissing);
+		myDoc.Activate();
+		try {
+			wordApp.ActiveDocument.SaveAs(ref destFile, ref wdFormatPDF, ref oMissing, ref oMissing,
+				ref oMissing, ref oMissing, ref oMissing, ref oMissing,
+				ref oMissing, ref oMissing, ref oMissing, ref oMissing,
+				ref oMissing, ref oMissing, ref oMissing, ref oMissing);
+		}
+		finally {
+			wordApp.ActiveDocument.Close(ref oMissing, ref oMissing, ref oMissing);
+			wordApp.Quit(ref oMissing, ref oMissing, ref oMissing);
+			if (myDoc != null)
+				System.Runtime.InteropServices.Marshal.ReleaseComObject(myDoc);
+			if (wordApp != null)
+				System.Runtime.InteropServices.Marshal.ReleaseComObject(wordApp);
+			myDoc = null;
+			wordApp = null;
+			GC.Collect();
+		}
+	}
+	#endregion
+
+	#region 合併檔案後存至指定路徑 +static void MergeFile(List<Source> sourceFile, string outputFile)
+	/// <summary>
+	/// 合併檔案後存至指定路徑
+	/// </summary>
+	/// <param name="sourceFile">要合併的檔案清單(以第一個檔為母檔)</param>
+	/// <param name="outputFile">合併後的輸出檔案</param>
+	public static void MergeFile(List<Docx> sourceFile, string outputFile) {
+		byte[] byteArray = File.ReadAllBytes(sourceFile[0].FileName);
+		using (MemoryStream stream = new MemoryStream()) {
+			stream.Write(byteArray, 0, (int)byteArray.Length);
+			using (WordprocessingDocument myDoc = WordprocessingDocument.Open(stream, true)) {
+				MainDocumentPart mainPart = myDoc.MainDocumentPart;
+				/*
+				PageMargin pgMar = mainPart.Document.Descendants<PageMargin>().FirstOrDefault();
+				Int32Value tMargin = 0;
+				Int32Value bMargin = 0;
+				UInt32Value lMargin = 0;
+				UInt32Value rMargin = 0;
+				if (pgMar != null) {
+					tMargin = pgMar.Top;
+					bMargin = pgMar.Bottom;
+					lMargin = pgMar.Left;
+					rMargin = pgMar.Right;
+				}*/
+
+				if (sourceFile.Count > 1) {
+					for (var i = 1; i < sourceFile.Count; i++) {
+						
+						AlternativeFormatImportPart chunk = mainPart.AddAlternativeFormatImportPart(AlternativeFormatImportPartType.WordprocessingML);
+						string altChunkId = mainPart.GetIdOfPart(chunk);
+						
+						using (FileStream fileStream = new FileStream(sourceFile[i].FileName, FileMode.Open)) {
+							chunk.FeedData(fileStream);
+						}
+						AltChunk altChunk = new AltChunk();
+						altChunk.Id = altChunkId;
+
+						//mainPart.Document.Body.InsertAfter(altChunk, mainPart.Document.Body.Elements<Paragraph>().First());
+						//mainPart.Document.Body.InsertAfter(new Paragraph(altChunk), mainPart.Document.Body.Elements<Paragraph>().First());
+						//mainPart.Document.Body.Append(altChunk);
+						mainPart.Document.Body.AppendChild(altChunk);
+
+						/*
+						using (WordprocessingDocument srcDoc = WordprocessingDocument.Open(sourceFile[i].FileName, false)) {
+							//List<OpenXmlElement> contents = srcDoc.MainDocumentPart.Document.Body.ChildElements.Where(x => x.GetType() != typeof(SectionProperties)).ToList();
+							List<OpenXmlElement> contents = srcDoc.MainDocumentPart.Document.Body.ChildElements.ToList();
+							contents.ForEach(t =>
+							{
+								mainPart.Document.Body.InsertAfter(t.CloneNode(true), mainPart.Document.Body.Elements<Paragraph>().Last());
+								//mainPart.Document.Body.InsertBefore(t.CloneNode(true), mainPart.Document.Body.Elements<Paragraph>().First());
+								//mainPart.Document.Body.Elements<SectionProperties>().First().PrependChild(t.CloneNode(true));
+							});
+						}*/
+
+						if (sourceFile[i].BeforeBreak) {
+							//mainPart.Document.Body.InsertAfter(new Break() { Type = BreakValues.Page }, mainPart.Document.Body.Elements<Paragraph>().First());
+						}
+					}
+				}
+
+				mainPart.Document.Save();
+			}
+			File.WriteAllBytes(outputFile, stream.ToArray());
+		}
 	}
 	#endregion
 
@@ -896,8 +1010,8 @@ public class OpenXmlHelper {
 		var element =
 			 new Drawing(
 				 new DW.Inline(
-					 //Size of image, unit = EMU(English Metric Unit)
-					 //1 cm = 360000 EMUs
+			//Size of image, unit = EMU(English Metric Unit)
+			//1 cm = 360000 EMUs
 					 new DW.Extent() { Cx = img.GetWidthInEMU(), Cy = img.GetHeightInEMU() },
 					 new DW.EffectExtent()
 					 {
@@ -949,10 +1063,8 @@ public class OpenXmlHelper {
 										 }),
 									 new A.PresetGeometry(
 										 new A.AdjustValueList()
-									 )
-									 { Preset = A.ShapeTypeValues.Rectangle }))
-						 )
-						 { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" })
+									 ) { Preset = A.ShapeTypeValues.Rectangle }))
+						 ) { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" })
 				 )
 				 {
 					 DistanceFromTop = (UInt32Value)0U,
@@ -969,20 +1081,23 @@ public class OpenXmlHelper {
 
 }
 
-public class Source
+#region Docx
+public class Docx
 {
 	public string FileName { get; set; }
 	public string Alias { get; set; }
-	public bool BreakFlag { get; set; }
+	public bool BeforeBreak { get; set; }
 
-	public Source(string fileName, bool breakFlag) : this(fileName, "", breakFlag) { }
-
-	public Source(string fileName, string alias, bool breakFlag) {
+	public Docx() { }
+	public Docx(string fileName, string alias, bool beforeBreak) {
 		FileName = fileName;
 		Alias = alias;
-		BreakFlag = breakFlag;
+		BeforeBreak = beforeBreak;
 	}
+
+	public Docx(string fileName, bool beforeBreak) : this(fileName, "", beforeBreak) { }
 }
+#endregion
 
 #region ImageFile
 public class ImageFile {
