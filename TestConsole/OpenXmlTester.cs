@@ -6,6 +6,7 @@ using System.Diagnostics;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using DocumentFormat.OpenXml.Drawing.Wordprocessing;
+using Word = Microsoft.Office.Interop.Word;
 
 namespace TestConsole
 {
@@ -19,7 +20,8 @@ namespace TestConsole
 			//TestTag();//測試書籤
 			//TestTable();//測試表格書籤
 			//TestIpo();//測試申請書
-			TestMerge();//測試檔案合併
+			//TestMergeAppl();//測試檔案合併(word application)
+			TestMergeAppl2();//測試檔案合併(word application copy paste)
 			//TestDelImage();//測試刪除圖片
 			Console.WriteLine("請按任一鍵關閉..");
 			Console.ReadKey();
@@ -207,27 +209,93 @@ namespace TestConsole
 		}
 		#endregion
 
-		#region -void TestMerge 測試檔案合併
-		private static void TestMerge() {
-			string baseFile = BaseDir + @"\testDocument\Blank3.docx";
+		#region -void TestMergeAppl 測試檔案合併(word application)
+		private static void TestMergeAppl() {
 			string outFile = BaseDir + @"\OutReport\MergeResult.docx";
-			/*
 			List<Docx> mergeList = new List<Docx>()
 			{
-				new Docx(BaseDir + @"\testDocument\img.docx", false),
-				new Docx(BaseDir + @"\testDocument\img-New.docx", true),
-			};*/
-			List<Docx> mergeList = new List<Docx>()
-			{
-				new Docx() {FileName=BaseDir + @"\testDocument\Blank3.docx",BeforeBreak=false },//第一個會當作母檔
-				new Docx() {FileName=BaseDir + @"\testDocument\m1494-2017050005-A03_patent_PPH_form.docx", BeforeBreak=true },
+				new Docx() {FileName=BaseDir + @"\testDocument\Blank3.docx" },//第一個會當作基礎檔
+				new Docx() {FileName=BaseDir + @"\testDocument\m1494-2017050005-A03_patent_PPH_form.docx", BeforeBreak=false },
 				new Docx() {FileName=BaseDir + @"\testDocument\m1494-2017050005-A04_revise_PPH_form.docx", BeforeBreak=true },
 				new Docx() {FileName=BaseDir + @"\testDocument\m1494-2017050005-A05_revise_form.docx", BeforeBreak = true }
 			};
-			OpenXmlHelper.MergeFile(mergeList, outFile);
+			OpenXmlHelper.MergeFileAppl(mergeList, outFile);
 			Process.Start(outFile);
 		}
+		#endregion
 
+		#region -void TestMergeAppl2 測試檔案合併(word application copy paste)
+		private static void TestMergeAppl2() {
+			string outputFile = BaseDir + @"\OutReport\MergeResult.docx";
+			List<Docx> sourceFile = new List<Docx>()
+			{
+				new Docx() {FileName=BaseDir + @"\testDocument\Blank3.docx" },//第一個會當作基礎檔
+				new Docx() {FileName=BaseDir + @"\testDocument\m1494-2017050005-A03_patent_PPH_form.docx", BeforeBreak=false },
+				new Docx() {FileName=BaseDir + @"\testDocument\m1494-2017050005-A04_revise_PPH_form.docx", BeforeBreak=true },
+				new Docx() {FileName=BaseDir + @"\testDocument\m1494-2017050005-A05_revise_form.docx", BeforeBreak = true }
+			};
+
+			//word用的常數值==
+			object wdFormatPDF = Word.WdSaveFormat.wdFormatPDF;
+			object wdFormatDoc = Word.WdSaveFormat.wdFormatDocument;//Microsoft Office Word 97-2003
+			object wdFormatDocx = Word.WdSaveFormat.wdFormatDocumentDefault;//Docx
+			object oFalse = false;
+			object oTrue = true;
+			object oMissing = System.Reflection.Missing.Value;
+			//object oPageBreak = Word.WdBreakType.wdLineBreak;//接下行合併(Shift-Enter)
+			//object oPageBreak = Word.WdBreakType.wdSectionBreakNextPage;//分節符號
+			object oPageBreak = Word.WdBreakType.wdPageBreak;//分頁符號
+															 //===============
+
+			object oBaseDoc = sourceFile[0].FileName;//第一個檔為基礎檔
+			object oOutputDoc = outputFile;//輸出檔
+
+			Word.Application wordApp = new Word.Application();
+			Word.Document origDoc = wordApp.Documents.Open(ref oBaseDoc, ref oMissing, ref oTrue, ref oMissing, ref oMissing
+				, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing
+				, ref oMissing, ref oMissing, ref oMissing);
+
+			try {
+				for (var i = 1; i < sourceFile.Count; i++) {
+					if (sourceFile[i].BeforeBreak) {
+						wordApp.Selection.InsertBreak(ref oPageBreak);
+					}
+
+					object oMergeDoc = sourceFile[i].FileName;
+					Word.Document mergeDoc = wordApp.Documents.Open(ref oMergeDoc, ref oMissing, ref oTrue, ref oMissing, ref oMissing
+					, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing
+					, ref oMissing, ref oMissing, ref oMissing);
+					Word.Range oRange = mergeDoc.Content;
+					oRange.Copy();
+
+					origDoc.Activate();
+					wordApp.Selection.Paste();
+				}
+
+				object oOutFormat;
+				if (outputFile.ToUpper().IndexOf(".DOCX") == -1) {
+					oOutFormat = wdFormatDoc;
+				} else {
+					oOutFormat = wdFormatDocx;
+				}
+				wordApp.ActiveDocument.SaveAs(ref oOutputDoc, ref oOutFormat, ref oMissing, ref oMissing, ref oMissing, ref oMissing
+					, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing
+					, ref oMissing, ref oMissing);
+			}
+			finally {
+				wordApp.ActiveDocument.Close(ref oFalse, ref oMissing, ref oMissing);
+				wordApp.Quit(ref oFalse, ref oMissing, ref oMissing);//加這行可以 Kill WINWORD.EXE process
+				if (wordApp != null)
+					System.Runtime.InteropServices.Marshal.ReleaseComObject(wordApp);
+				wordApp = null;
+				//GC.Collect();
+			}
+
+			Process.Start(outputFile);
+		}
+		#endregion
+
+		#region -void TestMerge1
 		private static void TestMerge1() {
 			/*
 			string templateFile = BaseDir + @"\testDocument\Blank3.docx";

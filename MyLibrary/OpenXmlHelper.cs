@@ -107,15 +107,15 @@ public class OpenXmlHelper
 	/// <param name="sourceFile">來源檔</param>
 	/// <param name="outputFile">目的檔</param>
 	public static void ConvertToPDF(string sourceFile, string outputFile) {
-		object srcFile = sourceFile;
-		object destFile = outputFile;
-
 		//word用的常數值==
 		object wdFormatPDF = Word.WdSaveFormat.wdFormatPDF;
 		object oFalse = false;
 		object oTrue = true;
 		object oMissing = System.Reflection.Missing.Value;
 		//===============
+
+		object srcFile = sourceFile;
+		object destFile = outputFile;
 
 		Word._Application wordApp = new Word.Application();
 
@@ -139,7 +139,64 @@ public class OpenXmlHelper
 				System.Runtime.InteropServices.Marshal.ReleaseComObject(wordApp);
 			myDoc = null;
 			wordApp = null;
-			GC.Collect();
+			//GC.Collect();
+		}
+	}
+	#endregion
+
+	#region 合併檔案後存至指定路徑 +static void MergeFileAppl(List<Source> sourceFile, string outputFile)
+	/// <summary>
+	/// 合併檔案後存至指定路徑
+	/// </summary>
+	/// <param name="sourceFile">要合併的檔案清單(以第一個檔為母檔)</param>
+	/// <param name="outputFile">合併後的輸出檔案</param>
+	public static void MergeFileAppl(List<Docx> sourceFile, string outputFile) {
+		//word用的常數值==
+		object wdFormatPDF = Word.WdSaveFormat.wdFormatPDF;
+		object wdFormatDoc = Word.WdSaveFormat.wdFormatDocument;//Microsoft Office Word 97-2003
+		object wdFormatDocx = Word.WdSaveFormat.wdFormatDocumentDefault;//Docx
+		object oFalse = false;
+		object oTrue = true;
+		object oMissing = System.Reflection.Missing.Value;
+		//object oPageBreak = Word.WdBreakType.wdLineBreak;//接下行合併(Shift-Enter)
+		//object oPageBreak = Word.WdBreakType.wdSectionBreakNextPage;//分節符號
+		object oPageBreak = Word.WdBreakType.wdPageBreak;//分頁符號
+		//===============
+
+		object oBaseDoc = sourceFile[0].FileName;//第一個檔為基礎檔
+		object oOutputDoc = outputFile;//輸出檔
+
+		Word.Application wordApp = new Word.Application();
+		Word.Document origDoc = wordApp.Documents.Open(ref oBaseDoc, ref oMissing, ref oTrue, ref oMissing, ref oMissing
+			, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing
+			, ref oMissing, ref oMissing, ref oMissing);
+		origDoc.Activate();
+
+		try {
+			for (var i = 1; i < sourceFile.Count; i++) {
+				if (sourceFile[i].BeforeBreak) {
+					wordApp.Selection.InsertBreak(ref oPageBreak);
+				}
+				wordApp.Selection.InsertFile(sourceFile[i].FileName, ref oMissing, ref oMissing, ref oMissing, ref oMissing);
+			}
+
+			object oOutFormat;
+			if (outputFile.ToUpper().IndexOf(".DOCX") == -1) {
+				oOutFormat = wdFormatDoc;
+			} else {
+				oOutFormat = wdFormatDocx;
+			}
+			wordApp.ActiveDocument.SaveAs(ref oOutputDoc, ref oOutFormat, ref oMissing, ref oMissing, ref oMissing, ref oMissing
+				, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing
+				, ref oMissing, ref oMissing);
+		}
+		finally {
+			wordApp.ActiveDocument.Close(ref oMissing, ref oMissing, ref oMissing);
+			wordApp.Quit(ref oMissing, ref oMissing, ref oMissing);//加這行可以 Kill WINWORD.EXE process
+			if (wordApp != null)
+				System.Runtime.InteropServices.Marshal.ReleaseComObject(wordApp);
+			wordApp = null;
+			//GC.Collect();
 		}
 	}
 	#endregion
