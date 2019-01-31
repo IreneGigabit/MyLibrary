@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
 using System.Diagnostics;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using DocumentFormat.OpenXml.Drawing.Wordprocessing;
@@ -21,7 +21,8 @@ namespace TestConsole
 			//TestTable();//測試表格書籤
 			//TestIpo();//測試申請書
 			//TestMergeAppl();//測試檔案合併(word application)
-			TestMergeAppl2();//測試檔案合併(word application copy paste)
+			//TestMergeAppl2();//測試檔案合併(word application copy paste)
+			TestMerge();
 			//TestDelImage();//測試刪除圖片
 			Console.WriteLine("請按任一鍵關閉..");
 			Console.ReadKey();
@@ -291,6 +292,90 @@ namespace TestConsole
 				//GC.Collect();
 			}
 
+			Process.Start(outputFile);
+		}
+		#endregion
+
+		#region -void TestMerge
+		private static void TestMerge() {
+			string outputFile = BaseDir + @"\OutReport\MergeResult1.docx";
+			List<Docx> sourceFile = new List<Docx>()
+			{
+				new Docx() {FileName=BaseDir + @"\testDocument\Blank3.docx" },//第一個會當作基礎檔
+				new Docx() {FileName=BaseDir + @"\testDocument\m1494-2017050005-A03_patent_PPH_form.docx", BeforeBreak=false },
+				new Docx() {FileName=BaseDir + @"\testDocument\m1494-2017050005-A04_revise_PPH_form.docx", BeforeBreak=true },
+				new Docx() {FileName=BaseDir + @"\testDocument\m1494-2017050005-A05_revise_form.docx", BeforeBreak = true }
+			};
+			byte[] byteArray = File.ReadAllBytes(sourceFile[0].FileName);
+			using (MemoryStream stream = new MemoryStream()) {
+				stream.Write(byteArray, 0, (int)byteArray.Length);
+				using (WordprocessingDocument myDoc = WordprocessingDocument.Open(stream, true)) {
+					MainDocumentPart mainPart = myDoc.MainDocumentPart;
+					if (sourceFile.Count > 1) {
+						for (var i = 1; i < sourceFile.Count; i++) {
+
+							AlternativeFormatImportPart chunk = mainPart.AddAlternativeFormatImportPart(AlternativeFormatImportPartType.WordprocessingML);
+							string altChunkId = mainPart.GetIdOfPart(chunk);
+
+							using (FileStream fileStream = new FileStream(sourceFile[i].FileName, FileMode.Open)) {
+								chunk.FeedData(fileStream);
+							}
+							AltChunk altChunk = new AltChunk();
+							altChunk.Id = altChunkId;
+
+							//mainPart.Document.Body.InsertAfter(altChunk, mainPart.Document.Body.Elements<Paragraph>().First());
+							//mainPart.Document.Body.InsertAfter(new Paragraph(altChunk), mainPart.Document.Body.Elements<Paragraph>().First());
+							//mainPart.Document.Body.Append(altChunk);
+
+							mainPart.Document.Body.AppendChild(altChunk);
+							/*
+							Paragraph paragraph1 = new Paragraph() { RsidParagraphAddition = "004670C5", RsidParagraphProperties = "004670C5", RsidRunAdditionDefault = "004670C5" };
+
+							ParagraphProperties paragraphProperties1 = new ParagraphProperties();
+
+							SectionProperties sectionProperties1 = new SectionProperties() { RsidR = "004670C5", RsidSect = "00AE3D38" };
+							FooterReference footerReference1 = new FooterReference() { Type = HeaderFooterValues.Default, Id = "rId6" };
+							FooterReference footerReference2 = new FooterReference() { Type = HeaderFooterValues.First, Id = "rId7" };
+							PageSize pageSize1 = new PageSize() { Width = (UInt32Value)11906U, Height = (UInt32Value)16838U };
+							PageMargin pageMargin1 = new PageMargin() { Top = 907, Right = (UInt32Value)1134U, Bottom = 454, Left = (UInt32Value)1134U, Header = (UInt32Value)851U, Footer = (UInt32Value)318U, Gutter = (UInt32Value)0U };
+							PageNumberType pageNumberType1 = new PageNumberType() { Start = 1 };
+							Columns columns1 = new Columns() { Space = "425" };
+							DocGrid docGrid1 = new DocGrid() { Type = DocGridValues.Lines, LinePitch = 360 };
+
+							sectionProperties1.Append(footerReference1);
+							sectionProperties1.Append(footerReference2);
+							sectionProperties1.Append(pageSize1);
+							sectionProperties1.Append(pageMargin1);
+							sectionProperties1.Append(pageNumberType1);
+							sectionProperties1.Append(columns1);
+							sectionProperties1.Append(docGrid1);
+
+							paragraphProperties1.Append(sectionProperties1);
+
+							paragraph1.Append(paragraphProperties1);
+							mainPart.Document.Body.AppendChild(paragraph1);
+							*/
+							/*
+							using (WordprocessingDocument srcDoc = WordprocessingDocument.Open(sourceFile[i].FileName, false)) {
+								//List<OpenXmlElement> contents = srcDoc.MainDocumentPart.Document.Body.ChildElements.Where(x => x.GetType() != typeof(SectionProperties)).ToList();
+								List<OpenXmlElement> contents = srcDoc.MainDocumentPart.Document.Body.ChildElements.ToList();
+								contents.ForEach(t =>
+								{
+									mainPart.Document.Body.InsertAfter(t.CloneNode(true), mainPart.Document.Body.Elements<Paragraph>().Last());
+									//mainPart.Document.Body.InsertBefore(t.CloneNode(true), mainPart.Document.Body.Elements<Paragraph>().First());
+									//mainPart.Document.Body.Elements<SectionProperties>().First().PrependChild(t.CloneNode(true));
+								});
+							}*/
+
+							if (sourceFile[i].BeforeBreak) {
+								//mainPart.Document.Body.InsertAfter(new Break() { Type = BreakValues.Page }, mainPart.Document.Body.Elements<Paragraph>().First());
+							}
+						}
+					}
+					mainPart.Document.Save();
+				}
+				File.WriteAllBytes(outputFile, stream.ToArray());
+			}
 			Process.Start(outputFile);
 		}
 		#endregion
