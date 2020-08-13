@@ -33,7 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>TestConsole.OpenXmlTester</StartupObject>
+    <StartupObject>TestConsole.WordTableTester</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DocumentFormat.OpenXml, Version=2.8.1.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
@@ -63,6 +63,7 @@
     <Compile Include="RandomTester.cs" />
     <Compile Include="RoundTester.cs" />
     <Compile Include="SplitTester.cs" />
+    <Compile Include="WordTableTester.cs" />
     <Compile Include="WordXml_old.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -86,6 +87,7 @@
     <None Include="testDocument\NP28758-發明-20180112.docx" />
     <None Include="testDocument\pdf29.pdf" />
     <None Include="testDocument\[團體標章註冊申請書].docx" />
+    <None Include="testDocument\催延展定稿_imt2e3_g2_form.docx" />
     <None Include="testDocument\商標註冊申請書 - 複製.docx" />
     <None Include="testDocument\商標註冊申請書.docx" />
     <None Include="testDocument\商標註冊申請書_old.docx" />
@@ -110,7 +112,7 @@
       <VersionMajor>2</VersionMajor>
       <VersionMinor>4</VersionMinor>
       <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
+      <WrapperTool>tlbimp</WrapperTool>
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
@@ -119,7 +121,7 @@
       <VersionMajor>8</VersionMajor>
       <VersionMinor>4</VersionMinor>
       <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
+      <WrapperTool>tlbimp</WrapperTool>
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
@@ -128,7 +130,7 @@
       <VersionMajor>5</VersionMajor>
       <VersionMinor>3</VersionMinor>
       <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
+      <WrapperTool>tlbimp</WrapperTool>
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>

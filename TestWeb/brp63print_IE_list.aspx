@@ -123,7 +123,7 @@
 							break;
 					}
 					
-					ipoRpt.AddParagraph("");
+					ipoRpt.AddParagraph();
 				}
 			}
 			

@@ -374,7 +374,7 @@ public class IpoReport : OpenXmlHelper {
 				CopyBlock(baseDocName, "base_ant3");
 				ReplaceBookmark("base_ant_cname", dtAnt.Rows[i]["Cname_string"].ToString().ToXmlUnicode());
 				ReplaceBookmark("base_ant_ename", dtAnt.Rows[i]["Ename_string"].ToString().ToXmlUnicode());
-				AddParagraph("");
+				AddParagraph();
 			}
 		}
 

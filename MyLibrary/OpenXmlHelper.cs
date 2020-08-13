@@ -167,7 +167,7 @@ public class OpenXmlHelper
 		object oOutputDoc = outputFile;//輸出檔
 
 		Word.Application wordApp = new Word.Application();
-		Word.Document origDoc = wordApp.Documents.Open(ref oBaseDoc, ref oMissing, ref oTrue, ref oMissing, ref oMissing
+		Word.Document origDoc = wordApp.Documents.Open(ref oBaseDoc, ref oTrue, ref oMissing, ref oMissing, ref oMissing
 			, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing
 			, ref oMissing, ref oMissing, ref oMissing);
 		origDoc.Activate();
@@ -180,15 +180,15 @@ public class OpenXmlHelper
 				wordApp.Selection.InsertFile(sourceFile[i].FileName, ref oMissing, ref oMissing, ref oMissing, ref oMissing);
 			}
 
-			object oOutFormat;
 			if (outputFile.ToUpper().IndexOf(".DOCX") == -1) {
-				oOutFormat = wdFormatDoc;
+				wordApp.ActiveDocument.SaveAs(ref oOutputDoc, ref wdFormatDoc, ref oMissing, ref oMissing, ref oMissing, ref oMissing
+					, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing
+					, ref oMissing, ref oMissing);
 			} else {
-				oOutFormat = wdFormatDocx;
+				wordApp.ActiveDocument.SaveAs(ref oOutputDoc, ref wdFormatDocx, ref oMissing, ref oMissing, ref oMissing, ref oMissing
+					, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing
+					, ref oMissing, ref oMissing);
 			}
-			wordApp.ActiveDocument.SaveAs(ref oOutputDoc, ref oOutFormat, ref oMissing, ref oMissing, ref oMissing, ref oMissing
-				, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing, ref oMissing
-				, ref oMissing, ref oMissing);
 		}
 		finally {
 			wordApp.ActiveDocument.Close(ref oMissing, ref oMissing, ref oMissing);
@@ -473,7 +473,7 @@ public class OpenXmlHelper
 				pars[i].RemoveAllChildren<Run>();
 				if (parRun != null) {
 					parRun.RemoveAllChildren<Text>();
-					parRun.Append(new Text(tmpInnerText));
+					//parRun.Append(new Text(tmpInnerText));
 					parRun.Append(new Text { Text = tmpInnerText, Space = SpaceProcessingModeValues.Preserve });
 					pars[i].Append(parRun.CloneNode(true));
 				}
@@ -1136,6 +1136,22 @@ public class OpenXmlHelper
 	}
 	#endregion
 
+	public Table GetTemplateTable(string srcDocName, int index) {
+		//return tplDoc[srcDocName].MainDocumentPart.Document.Body.Descendants<Table>().ElementAt(index);
+		return outBody.Descendants<Table>().ElementAt(index);
+	}
+
+	#region 指定表格增加一列 +void AppendRow(string srcDocName, int index)
+	public void AppendRow(string srcDocName, int index) {
+		Table sTable = tplDoc[srcDocName].MainDocumentPart.Document.Body.Descendants<Table>().ElementAt(index);
+		Table siTable = sTable.Descendants<Table>().ElementAt(index);
+		TableRow sLastRow = siTable.Descendants<TableRow>().LastOrDefault();
+
+		Table dTable = outDoc.MainDocumentPart.Document.Body.Descendants<Table>().ElementAt(index);
+		Table diTable = dTable.Descendants<Table>().ElementAt(index);
+		diTable.Append(sLastRow.CloneNode(true));
+	}
+	#endregion
 }
 
 #region Docx
@@ -1155,6 +1171,28 @@ public class Docx
 	public Docx(string fileName, bool beforeBreak) : this(fileName, "", beforeBreak) { }
 }
 #endregion
+
+public static class DocxTableExt
+{
+	public static Table GetTable(this OpenXmlElement baseElement,int index) {
+		Console.WriteLine(baseElement.Descendants<Table>().Count());
+		return baseElement.Descendants<Table>().ElementAt(index);
+	}
+
+	public static TableRow GetRow(this Table tbl,int index) {
+		return tbl.Elements<TableRow>().ElementAt(index);
+	}
+
+	public static TableCell GetCell(this TableRow tr, int index) {
+		return tr.Elements<TableCell>().ElementAt(index);
+	}
+	public static void NewRow(this Table tbl) {
+		TableRow sLastRow = tbl.Descendants<TableRow>().LastOrDefault();
+		tbl.Append(sLastRow.CloneNode(true));
+	}
+
+}
+
 
 #region ImageFile
 public class ImageFile {

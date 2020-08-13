@@ -17,8 +17,8 @@ namespace TestConsole
         static DirectoryInfo dir = new DirectoryInfo(CurrDir);
         static string BaseDir = dir.Parent.Parent.FullName;//專案路徑
 
-        static string templateFile = BaseDir + @"\testDocument\英文Invoice_test.docx";
-        static string outputFile = BaseDir + @"\OutReport\m1583-英文Invoice.docx";
+        static string templateFile = BaseDir + @"\testDocument\催延展定稿_imt2e3_g2_form.docx";
+        static string outputFile = BaseDir + @"\OutReport\催延展.docx";
 
         static void Main(string[] args)
         {
@@ -28,22 +28,13 @@ namespace TestConsole
             _tplFile.Add("invoice", templateFile);
             docx.CloneFromFile(_tplFile, true);
 
-            docx.CopyBlock("b_title");
-            docx.CopyBlock("b_item");
-            docx.ReplaceBookmark("e_arcase", "xxxxxxx:");
-            docx.CopyTable(2);
-            docx.ReplaceBookmark("t_title", "Total:");
-            docx.ReplaceBookmark("t_curr", "NTD");
-            docx.ReplaceBookmark("t_total", "23,000.00");
-            docx.CopyTable(2);
-            docx.ReplaceBookmark("t_title", "");
-            docx.ReplaceBookmark("t_curr", "USD");
-            docx.ReplaceBookmark("t_total", "120.00");
+            docx.CopyBlock("b_all");
+			//TableRow sTr = docx.GetTemplateTable("invoice", 0).GetTable(0).GetRow(1);
+			docx.GetTemplateTable("invoice", 0).GetTable(0).NewRow();
 
-            docx.CopyBlock("b_total3");
+			//docx.AppendRow("invoice", 0);
 
-            docx.CopyPageHeader("invoice");//複製頁首
-            docx.CopyPageFoot("invoice", false);//複製頁尾/邊界
+			docx.CopyPageFoot("invoice", false);//複製頁尾/邊界
 
             docx.SaveTo(outputFile);
 
